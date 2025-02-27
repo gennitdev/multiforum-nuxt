@@ -30,6 +30,7 @@ import { getSortFromQuery } from "@/components/comments/getSortFromQuery";
 import { usernameVar, modProfileNameVar } from "@/cache";
 import { useRoute } from "nuxt/app";
 import DiscussionBodyEditForm from "./DiscussionBodyEditForm.vue";
+import MarkAsAnsweredButton from "./MarkAsAnsweredButton.vue";
 
 const COMMENT_LIMIT = 50;
 
@@ -344,6 +345,9 @@ const handleClickEditDiscussionBody = () => {
                     </template>
                     <template #button-slot>
                       <div class="flex h-12 items-center">
+                        <MarkAsAnsweredButton 
+                          :v-if="loggedInUserIsAuthor"
+                        />
                         <DiscussionVotes
                           v-if="activeDiscussionChannel"
                           :discussion="discussion"

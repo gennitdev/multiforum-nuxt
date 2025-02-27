@@ -90,6 +90,7 @@ export const GET_DISCUSSION_COMMENTS = gql`
           count
         }
       }
+      answered
       Comments {
         id
         text

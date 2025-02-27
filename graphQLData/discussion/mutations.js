@@ -45,12 +45,8 @@ export const REMOVE_EMOJI_FROM_DISCUSSION_CHANNEL = gql`
 `;
 
 export const CREATE_DISCUSSION_WITH_CHANNEL_CONNECTIONS = gql`
-  mutation createDiscussion(
-    $input: [DiscussionCreateInputWithChannels!]!
-  ) {
-    createDiscussionWithChannelConnections(
-      input: $input
-    ) {
+  mutation createDiscussion($input: [DiscussionCreateInputWithChannels!]!) {
+    createDiscussionWithChannelConnections(input: $input) {
       id
       title
       body
@@ -228,6 +224,56 @@ export const ADD_FEEDBACK_COMMENT_TO_DISCUSSION = gql`
         text
         GivesFeedbackOnDiscussion {
           id
+        }
+      }
+    }
+  }
+`;
+
+export const MARK_AS_ANSWERED = gql`
+  mutation markAsAnswered(
+    $commentId: ID!
+    $channelId: String!
+    $discussionId: ID!
+  ){
+    updateDiscussionChannels(
+      where: { channelUniqueName: $channelId, discussionId: $discussionId }
+      update: {
+        Answers: { connect: [{ where: { node: { id: $commentId } } }] }
+      }
+    ) {
+      discussionChannels {
+        id
+        Answers {
+          id
+          text
+          CommentAuthor {
+            ... on User {
+              username
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const MARK_AS_UNANSWERED = gql`
+  mutation markAsUnAnswered($channelId: String!, $discussionId: ID!) {
+    updateDiscussionChannels(
+      where: { channelUniqueName: $channelId, discussionId: $discussionId }
+      update: { Answers: { disconnect: [{ where: { node: { NOT: null } } }] } }
+    ) {
+      discussionChannels {
+        id
+        Answers {
+          id
+          text
+          CommentAuthor {
+            ... on User {
+              username
+            }
+          }
         }
       }
     }
