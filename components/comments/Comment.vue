@@ -252,7 +252,7 @@ const {
       cache.modify({
         fields: {
           discussionChannels(existingChannels = [], { readField }) {
-            return existingChannels.map((channelRef: any) => {
+            return existingChannels.map((channelRef: object) => {
               const channelId = readField('id', channelRef);
               if (channelId === updatedChannel.id) {
                 cache.writeFragment({
@@ -301,7 +301,7 @@ const {
         fields: {
           // Force a refresh of any queries that depend on the answers
           discussionChannels(existingChannels = [], { readField }) {
-            return existingChannels.map((channelRef: any) => {
+            return existingChannels.map((channelRef: object) => {
               const channelId = readField('id', channelRef);
               if (channelId === updatedChannel.id) {
                 // Update this channel with the new answers
@@ -485,8 +485,8 @@ const copyLink = async () => {
   try {
     await navigator.clipboard.writeText(permalink.value);
     emit("showCopiedLinkNotification", true);
-  } catch (e: any) {
-    throw new Error(e);
+  } catch (e: unknown) {
+    throw new Error(String(e));
   }
   setTimeout(() => {
     emit("showCopiedLinkNotification", false);
@@ -505,7 +505,7 @@ const isMarkedAsAnswer = computed(() => {
   }
   
   // Check if this comment's ID is in the Answers array
-  return props.answers.some((answer: any) => answer.id === props.commentData.id);
+  return props.answers.some((answer: Comment) => answer.id === props.commentData.id);
 });
 
 // Functions for marking/unmarking as best answer

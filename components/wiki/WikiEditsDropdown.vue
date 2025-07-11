@@ -2,17 +2,18 @@
   import { ref, computed } from "vue";
   import type { PropType } from "vue";
   import { timeAgo } from "@/utils";
+  import type { WikiPage, TextVersion } from "@/__generated__/graphql";
   import WikiRevisionDiffModal from "./WikiRevisionDiffModal.vue";
 
   const props = defineProps({
     wikiPage: {
-      type: Object as PropType<any>, // Using any since we don't have a specific WikiPage type
+      type: Object as PropType<WikiPage>,
       required: true,
     },
   });
 
   const isOpen = ref(false);
-  const activeRevision = ref(null);
+  const activeRevision = ref<TextVersion | null>(null);
 
   // Total number of edits
   const totalEdits = computed(() => {
@@ -49,7 +50,7 @@
       });
 
       // Subsequent items: compare each past version with the next one
-      props.wikiPage.PastVersions.forEach((version: any, index: number) => {
+      props.wikiPage.PastVersions.forEach((version: TextVersion, index: number) => {
         // Skip the most recent past version since it's already handled above
         if (index === 0) return;
         
@@ -81,7 +82,7 @@
   };
 
   // Open diff modal for a specific revision
-  const openRevisionDiff = (revision: any) => {
+  const openRevisionDiff = (revision: TextVersion) => {
     activeRevision.value = revision;
     closeDropdown();
   };

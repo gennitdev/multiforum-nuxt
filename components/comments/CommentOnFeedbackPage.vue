@@ -17,6 +17,7 @@ import WarningModal from "@/components/WarningModal.vue";
 import type { PropType } from "vue";
 import type { Comment } from "@/__generated__/graphql";
 import type { MenuItemType } from "@/components/IconButtonDropdown.vue";
+import type { ApolloCache } from "@apollo/client/core";
 import { timeAgo, ALLOWED_ICONS } from "@/utils";
 import { modProfileNameVar, usernameVar } from "@/cache";
 import { getFeedbackPermalinkObject } from "@/utils/routerUtils";
@@ -78,7 +79,7 @@ const {
   mutate: deleteComment,
   onDone: onDoneDeletingComment,
 } = useMutation(DELETE_COMMENT, {
-  update: (cache: any) => {
+  update: (cache: ApolloCache<any>) => {
     cache.evict({
       id: cache.identify({ __typename: "Comment", id: props.comment.id }),
     });
@@ -186,8 +187,8 @@ const copyLink = async () => {
   try {
     await navigator.clipboard.writeText(permalink);
     emit("showCopiedLinkNotification", true);
-  } catch (e: any) {
-    throw new Error(e);
+  } catch (e: unknown) {
+    throw new Error(String(e));
   }
   setTimeout(() => {
     emit("showCopiedLinkNotification", false);
