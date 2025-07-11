@@ -29,10 +29,11 @@ const searchInputComputed = computed(() => {
   return filterValues.value.searchInput || "";
 });
 
-const { result, loading, error, fetchMore } = useQuery(
+const { result, loading, error, fetchMore, refetch } = useQuery(
   GET_SUSPENDED_MODS_WITH_SEARCH,
   () => ({
     channelUniqueName: forumId.value,
+    searchInput: searchInputComputed.value,
     limit: SUSPENDED_MODS_PAGE_LIMIT,
     offset: 0,
   }),
@@ -42,25 +43,11 @@ const { result, loading, error, fetchMore } = useQuery(
 );
 
 const suspensions = computed(() => {
-  const mods = result.value?.channels[0]?.SuspendedMods ?? [];
-  const searchTerm = searchInputComputed.value.toLowerCase();
-  
-  if (!searchTerm) {
-    return mods;
-  }
-  
-  return mods.filter((mod) => {
-    const displayName = (mod.SuspendedMod?.displayName || "").toLowerCase();
-    return displayName.includes(searchTerm);
-  });
+  return result.value?.channels[0]?.SuspendedMods ?? [];
 });
 
 const filteredAggregateCount = computed(() => {
-  const searchTerm = searchInputComputed.value.toLowerCase();
-  if (!searchTerm) {
-    return result.value?.channels[0]?.SuspendedModsAggregate?.count ?? 0;
-  }
-  return suspensions.value.length;
+  return result.value?.channels[0]?.SuspendedModsAggregate?.count ?? 0;
 });
 
 const humanReadableDate = (dateISO: string): string => {
@@ -77,6 +64,19 @@ watch(
   }
 );
 
+// Watch for search input changes to refetch data
+watch(
+  () => filterValues.value.searchInput,
+  () => {
+    refetch({
+      channelUniqueName: forumId.value,
+      searchInput: filterValues.value.searchInput,
+      limit: SUSPENDED_MODS_PAGE_LIMIT,
+      offset: 0,
+    });
+  }
+);
+
 // Update search input via URL params
 const updateSearchInput = (searchInput: string) => {
   updateFilters({
@@ -90,6 +90,8 @@ const updateSearchInput = (searchInput: string) => {
 const loadMore = () => {
   fetchMore({
     variables: {
+      channelUniqueName: forumId.value,
+      searchInput: filterValues.value.searchInput,
       offset: suspensions.value.length,
       limit: SUSPENDED_MODS_PAGE_LIMIT,
     },

@@ -37,30 +37,17 @@ const {
   refetch,
 } = useQuery(GET_SUSPENDED_USERS_WITH_SEARCH, {
   channelUniqueName: forumId.value,
+  searchInput: searchInputComputed.value,
   limit: SUSPENDED_USERS_PAGE_LIMIT,
   offset: 0,
 });
 
 const suspendedUsers = computed(() => {
-  const users = suspendedUsersResult.value?.channels[0]?.SuspendedUsers ?? [];
-  const searchTerm = searchInputComputed.value.toLowerCase();
-  
-  if (!searchTerm) {
-    return users;
-  }
-  
-  return users.filter((user) => {
-    const username = (user.SuspendedUser?.username || user.username || "").toLowerCase();
-    return username.includes(searchTerm);
-  });
+  return suspendedUsersResult.value?.channels[0]?.SuspendedUsers ?? [];
 });
 
 const filteredAggregateCount = computed(() => {
-  const searchTerm = searchInputComputed.value.toLowerCase();
-  if (!searchTerm) {
-    return suspendedUsersResult.value?.channels[0]?.SuspendedUsersAggregate?.count ?? 0;
-  }
-  return suspendedUsers.value.length;
+  return suspendedUsersResult.value?.channels[0]?.SuspendedUsersAggregate?.count ?? 0;
 });
 
 const humanReadableDate = (dateISO: string): string => {
@@ -77,6 +64,19 @@ watch(
   }
 );
 
+// Watch for search input changes to refetch data
+watch(
+  () => filterValues.value.searchInput,
+  () => {
+    refetch({
+      channelUniqueName: forumId.value,
+      searchInput: filterValues.value.searchInput,
+      limit: SUSPENDED_USERS_PAGE_LIMIT,
+      offset: 0,
+    });
+  }
+);
+
 // Update search input via URL params
 const updateSearchInput = (searchInput: string) => {
   updateFilters({
@@ -90,6 +90,8 @@ const updateSearchInput = (searchInput: string) => {
 const loadMore = () => {
   fetchMore({
     variables: {
+      channelUniqueName: forumId.value,
+      searchInput: filterValues.value.searchInput,
       offset: suspendedUsers.value.length,
       limit: SUSPENDED_USERS_PAGE_LIMIT,
     },
