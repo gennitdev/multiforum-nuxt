@@ -33,13 +33,60 @@ const emit = defineEmits([
 
 // Formatted dates for date pickers
 const formattedStartTimeDate = computed(() => {
-  const dateTime = DateTime.fromJSDate(props.startTime);
-  return dateTime.toFormat("yyyy-MM-dd");
+  try {
+    const dateTime = DateTime.fromJSDate(props.startTime);
+    if (!dateTime.isValid) {
+      console.warn("Invalid start time:", props.startTime);
+      return DateTime.now().toFormat("yyyy-MM-dd");
+    }
+    return dateTime.toFormat("yyyy-MM-dd");
+  } catch (error) {
+    console.error("Error formatting start date:", error);
+    return DateTime.now().toFormat("yyyy-MM-dd");
+  }
 });
 
 const formattedEndTimeDate = computed(() => {
-  const dateTime = DateTime.fromJSDate(props.endTime);
-  return dateTime.toFormat("yyyy-MM-dd");
+  try {
+    const dateTime = DateTime.fromJSDate(props.endTime);
+    if (!dateTime.isValid) {
+      console.warn("Invalid end time:", props.endTime);
+      return DateTime.now().toFormat("yyyy-MM-dd");
+    }
+    return dateTime.toFormat("yyyy-MM-dd");
+  } catch (error) {
+    console.error("Error formatting end date:", error);
+    return DateTime.now().toFormat("yyyy-MM-dd");
+  }
+});
+
+// Formatted times for time pickers with error handling
+const formattedStartTime = computed(() => {
+  try {
+    const dateTime = DateTime.fromJSDate(props.startTime);
+    if (!dateTime.isValid) {
+      console.warn("Invalid start time:", props.startTime);
+      return "09:00";
+    }
+    return dateTime.toFormat('HH:mm');
+  } catch (error) {
+    console.error("Error formatting start time:", error);
+    return "09:00";
+  }
+});
+
+const formattedEndTime = computed(() => {
+  try {
+    const dateTime = DateTime.fromJSDate(props.endTime);
+    if (!dateTime.isValid) {
+      console.warn("Invalid end time:", props.endTime);
+      return "10:00";
+    }
+    return dateTime.toFormat('HH:mm');
+  } catch (error) {
+    console.error("Error formatting end time:", error);
+    return "10:00";
+  }
 });
 
 // Handler functions
@@ -77,7 +124,7 @@ const handleEndTimeTimeChange = (timeValue: string) => {
         <TimePicker
           v-if="!isAllDay"
           test-id="start-time-time-input"
-          :value="DateTime.fromJSDate(startTime).toFormat('HH:mm')"
+          :value="formattedStartTime"
           data-testid="start-time-picker"
           @update="handleStartTimeTimeChange"
         />
@@ -105,7 +152,7 @@ const handleEndTimeTimeChange = (timeValue: string) => {
         <TimePicker
           v-if="!isAllDay"
           test-id="end-time-time-input"
-          :value="DateTime.fromJSDate(endTime).toFormat('HH:mm')"
+          :value="formattedEndTime"
           data-testid="end-time-picker"
           @update="handleEndTimeTimeChange"
         />

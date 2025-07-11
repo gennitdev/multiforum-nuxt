@@ -105,7 +105,7 @@ onUnmounted(() => {
       :data-testid="testId"
       class="border rounded border-gray-200 text-sm focus:border-orange-500 focus:ring-orange-500 w-full sm:w-32 h-10 px-3 pr-8 flex items-center dark:border-gray-700 dark:bg-gray-800 dark:text-white cursor-pointer"
       :class="{ 'opacity-60 cursor-not-allowed': disabled }"
-      @click="!disabled && toggleDropdown()"
+      @click="toggleDropdown()"
     >
       {{ formattedTime }}
 
