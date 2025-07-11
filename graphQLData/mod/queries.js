@@ -388,6 +388,82 @@ export const GET_SUSPENDED_USERS_IN_CHANNEL = gql`
   }
 `;
 
+export const GET_SUSPENDED_USERS_WITH_SEARCH = gql`
+  query getSuspendedUsersWithSearch(
+    $channelUniqueName: String!
+    $where: SuspensionWhere
+    $limit: Int!
+    $offset: Int!
+  ) {
+    channels(where: { uniqueName: $channelUniqueName }) {
+      uniqueName
+      SuspendedUsersAggregate(where: $where) {
+        count
+      }
+      SuspendedUsers(
+        where: $where
+        options: {
+          limit: $limit
+          offset: $offset
+          sort: { createdAt: DESC }
+        }
+      ) {
+        id
+        username
+        createdAt
+        suspendedUntil
+        suspendedIndefinitely
+        SuspendedUser {
+          username
+          displayName
+          profilePicURL
+          commentKarma
+          discussionKarma
+        }
+        RelatedIssue {
+          id
+        }
+      }
+    }
+  }
+`;
+
+export const GET_SUSPENDED_MODS_WITH_SEARCH = gql`
+  query getSuspendedModsWithSearch(
+    $channelUniqueName: String!
+    $where: SuspensionWhere
+    $limit: Int!
+    $offset: Int!
+  ) {
+    channels(where: { uniqueName: $channelUniqueName }) {
+      uniqueName
+      SuspendedModsAggregate(where: $where) {
+        count
+      }
+      SuspendedMods(
+        where: $where
+        options: {
+          limit: $limit
+          offset: $offset
+          sort: { createdAt: DESC }
+        }
+      ) {
+        id
+        username
+        createdAt
+        suspendedUntil
+        suspendedIndefinitely
+        SuspendedMod {
+          displayName
+        }
+        RelatedIssue {
+          id
+        }
+      }
+    }
+  }
+`;
+
 export const GET_COMMENT_ISSUE = gql`
   query getCommentIssue($commentId: ID!) {
     comments(where: { id: $commentId }) {
