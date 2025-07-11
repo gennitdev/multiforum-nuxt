@@ -391,7 +391,6 @@ export const GET_SUSPENDED_USERS_IN_CHANNEL = gql`
 export const GET_SUSPENDED_USERS_WITH_SEARCH = gql`
   query getSuspendedUsersWithSearch(
     $channelUniqueName: String!
-    $searchInput: String
     $limit: Int!
     $offset: Int!
   ) {
@@ -430,7 +429,6 @@ export const GET_SUSPENDED_USERS_WITH_SEARCH = gql`
 export const GET_SUSPENDED_MODS_WITH_SEARCH = gql`
   query getSuspendedModsWithSearch(
     $channelUniqueName: String!
-    $searchInput: String
     $limit: Int!
     $offset: Int!
   ) {

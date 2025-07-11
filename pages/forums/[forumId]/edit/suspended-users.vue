@@ -37,7 +37,6 @@ const {
   refetch,
 } = useQuery(GET_SUSPENDED_USERS_WITH_SEARCH, {
   channelUniqueName: forumId.value,
-  searchInput: searchInputComputed.value,
   limit: SUSPENDED_USERS_PAGE_LIMIT,
   offset: 0,
 });

@@ -33,7 +33,6 @@ const { result, loading, error, fetchMore } = useQuery(
   GET_SUSPENDED_MODS_WITH_SEARCH,
   () => ({
     channelUniqueName: forumId.value,
-    searchInput: searchInputComputed.value,
     limit: SUSPENDED_MODS_PAGE_LIMIT,
     offset: 0,
   }),
