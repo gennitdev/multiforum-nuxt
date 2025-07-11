@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { GET_SUSPENDED_MODS_WITH_SEARCH } from "@/graphQLData/mod/queries";
+import type { SuspensionWhere } from "@/__generated__/graphql";
 import { useQuery } from "@vue/apollo-composable";
 import { useRoute, useRouter } from "nuxt/app";
 import { DateTime } from "luxon";
@@ -29,11 +30,23 @@ const searchInputComputed = computed(() => {
   return filterValues.value.searchInput || "";
 });
 
+// Build where clause conditionally
+const whereClause = computed((): SuspensionWhere | undefined => {
+  if (!searchInputComputed.value) {
+    return undefined;
+  }
+  return {
+    SuspendedMod: {
+      displayName_CONTAINS: searchInputComputed.value,
+    },
+  };
+});
+
 const { result, loading, error, fetchMore, refetch } = useQuery(
   GET_SUSPENDED_MODS_WITH_SEARCH,
   () => ({
     channelUniqueName: forumId.value,
-    searchInput: searchInputComputed.value,
+    where: whereClause.value,
     limit: SUSPENDED_MODS_PAGE_LIMIT,
     offset: 0,
   }),
@@ -70,7 +83,7 @@ watch(
   () => {
     refetch({
       channelUniqueName: forumId.value,
-      searchInput: filterValues.value.searchInput,
+      where: whereClause.value,
       limit: SUSPENDED_MODS_PAGE_LIMIT,
       offset: 0,
     });
@@ -91,7 +104,7 @@ const loadMore = () => {
   fetchMore({
     variables: {
       channelUniqueName: forumId.value,
-      searchInput: filterValues.value.searchInput,
+      where: whereClause.value,
       offset: suspensions.value.length,
       limit: SUSPENDED_MODS_PAGE_LIMIT,
     },

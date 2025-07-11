@@ -391,19 +391,17 @@ export const GET_SUSPENDED_USERS_IN_CHANNEL = gql`
 export const GET_SUSPENDED_USERS_WITH_SEARCH = gql`
   query getSuspendedUsersWithSearch(
     $channelUniqueName: String!
-    $searchInput: String
+    $where: SuspensionWhere
     $limit: Int!
     $offset: Int!
   ) {
     channels(where: { uniqueName: $channelUniqueName }) {
       uniqueName
-      SuspendedUsersAggregate(
-        where: { SuspendedUser: { username_CONTAINS: $searchInput } }
-      ) {
+      SuspendedUsersAggregate(where: $where) {
         count
       }
       SuspendedUsers(
-        where: { SuspendedUser: { username_CONTAINS: $searchInput } }
+        where: $where
         options: {
           limit: $limit
           offset: $offset
@@ -433,19 +431,17 @@ export const GET_SUSPENDED_USERS_WITH_SEARCH = gql`
 export const GET_SUSPENDED_MODS_WITH_SEARCH = gql`
   query getSuspendedModsWithSearch(
     $channelUniqueName: String!
-    $searchInput: String
+    $where: SuspensionWhere
     $limit: Int!
     $offset: Int!
   ) {
     channels(where: { uniqueName: $channelUniqueName }) {
       uniqueName
-      SuspendedModsAggregate(
-        where: { SuspendedMod: { displayName_CONTAINS: $searchInput } }
-      ) {
+      SuspendedModsAggregate(where: $where) {
         count
       }
       SuspendedMods(
-        where: { SuspendedMod: { displayName_CONTAINS: $searchInput } }
+        where: $where
         options: {
           limit: $limit
           offset: $offset
