@@ -11,6 +11,7 @@ import { sideNavIsOpenVar, setSideNavIsOpenVar } from "@/cache";
 // Composables for separated concerns
 import { useAuthManager } from "@/composables/useAuthManager";
 import { useTestAuthHelpers } from "@/composables/useTestAuthHelpers";
+import { useTestAuth } from "@/composables/useTestAuth";
 
 const isDevelopment = computed(() => config.environment === "development");
 const route = useRoute();
@@ -34,6 +35,7 @@ const shouldExposeTestHelpers =
 
 if (shouldExposeTestHelpers) {
   useTestAuthHelpers();
+  useTestAuth(); // Also expose the test auth functions
 }
 
 // Handle session expired login

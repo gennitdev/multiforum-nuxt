@@ -51,5 +51,30 @@ declare namespace Cypress {
      * Setup clipboard text writing
      */
     writeClipboardText(): Chainable<void>;
+
+    /**
+     * Clear all authentication state completely
+     */
+    clearAllAuthState(): Chainable<void>;
+
+    /**
+     * Log in as a specific user with fresh token
+     */
+    loginAsUser(userCredentials: { username: string; password: string }): Chainable<string>;
+
+    /**
+     * Authenticate on current page programmatically
+     */
+    authenticateOnCurrentPage(): Chainable<void>;
+
+    /**
+     * Authenticate as a different user on current page
+     */
+    authenticateAsUserOnCurrentPage(userCredentials: { username: string; password: string; displayName?: string }): Chainable<void>;
+
+    /**
+     * Quick user switch within the same test
+     */
+    switchToUser(userCredentials: { username: string; password: string; displayName?: string }): Chainable<void>;
   }
 }

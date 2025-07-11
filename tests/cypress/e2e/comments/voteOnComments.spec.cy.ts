@@ -11,7 +11,7 @@ describe("Comment voting operations", () => {
   });
 
   it("User 1 can undo upvote on their own comment", () => {
-    const TEST_COMMENT_TEXT = "Test comment";
+    const TEST_COMMENT_TEXT = "Test comment by user 1";
 
     // Set up GraphQL request interception
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
@@ -25,7 +25,7 @@ describe("Comment voting operations", () => {
       }
     });
 
-    // User 1 logs in programmatically
+    // User 1 logs in programmatically (admin user)
     cy.visit(DISCUSSION_LIST);
     cy.authenticateOnCurrentPage();
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
@@ -98,7 +98,7 @@ describe("Comment voting operations", () => {
   });
 
   it("User 2 can upvote another user's comment", () => {
-    const TEST_COMMENT_TEXT = "Test comment";
+    const TEST_COMMENT_TEXT = "Test comment by user 1";
 
     // Set up GraphQL request interception
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
@@ -110,15 +110,14 @@ describe("Comment voting operations", () => {
       }
     });
 
-    // User 2 logs in with different credentials
+    // Navigate to the page first
+    cy.visit(DISCUSSION_LIST);
+    
+    // ENHANCED: Switch to User 2 with improved authentication
     const username2 = Cypress.env("auth0_username_2");
     const password2 = Cypress.env("auth0_password_2");
     
-    // Visit the page first
-    cy.visit(DISCUSSION_LIST);
-    
-    // Then authenticate as User 2
-    cy.authenticateAsUserOnCurrentPage({
+    cy.switchToUser({
       username: username2,
       password: password2,
       displayName: 'testuser2'
