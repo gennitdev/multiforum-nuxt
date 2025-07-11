@@ -1,11 +1,20 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { GET_SUSPENDED_MODS_BY_CHANNEL } from "@/graphQLData/mod/queries";
+import { computed, ref, watch } from "vue";
+import { GET_SUSPENDED_MODS_WITH_SEARCH } from "@/graphQLData/mod/queries";
 import { useQuery } from "@vue/apollo-composable";
-import { useRoute } from "nuxt/app";
+import { useRoute, useRouter } from "nuxt/app";
 import { DateTime } from "luxon";
+import SearchBar from "@/components/SearchBar.vue";
+import LoadMore from "@/components/LoadMore.vue";
+import ErrorBanner from "@/components/ErrorBanner.vue";
+import { getSuspendedModFilterValuesFromParams } from "@/utils/getSuspendedModFilterValuesFromParams";
+import { updateFilters } from "@/utils/routerUtils";
+
+const SUSPENDED_MODS_PAGE_LIMIT = 15;
 
 const route = useRoute();
+const router = useRouter();
+
 const forumId = computed(() => {
   if (typeof route.params.forumId === "string") {
     return route.params.forumId;
@@ -13,48 +22,137 @@ const forumId = computed(() => {
   return "";
 });
 
-const { result, loading, error } = useQuery(
-  GET_SUSPENDED_MODS_BY_CHANNEL,
+// Filter values from URL params
+const filterValues = ref(getSuspendedModFilterValuesFromParams({ route }));
+
+const searchInputComputed = computed(() => {
+  return filterValues.value.searchInput || "";
+});
+
+const { result, loading, error, fetchMore } = useQuery(
+  GET_SUSPENDED_MODS_WITH_SEARCH,
   () => ({
     channelUniqueName: forumId.value,
+    searchInput: searchInputComputed.value,
+    limit: SUSPENDED_MODS_PAGE_LIMIT,
+    offset: 0,
   }),
   {
     fetchPolicy: "cache-first",
   }
 );
-const suspensions = computed(
-  () => result.value?.channels[0]?.SuspendedMods ?? []
-);
-const aggregateCount = computed(
-  () => result.value?.channels[0]?.SuspendedModsAggregate?.count ?? 0
-);
+
+const suspensions = computed(() => {
+  const mods = result.value?.channels[0]?.SuspendedMods ?? [];
+  const searchTerm = searchInputComputed.value.toLowerCase();
+  
+  if (!searchTerm) {
+    return mods;
+  }
+  
+  return mods.filter((mod) => {
+    const displayName = (mod.SuspendedMod?.displayName || "").toLowerCase();
+    return displayName.includes(searchTerm);
+  });
+});
+
+const filteredAggregateCount = computed(() => {
+  const searchTerm = searchInputComputed.value.toLowerCase();
+  if (!searchTerm) {
+    return result.value?.channels[0]?.SuspendedModsAggregate?.count ?? 0;
+  }
+  return suspensions.value.length;
+});
 
 const humanReadableDate = (dateISO: string): string => {
   return DateTime.fromISO(dateISO).toLocaleString(DateTime.DATETIME_MED);
 };
+
+// Watch for route query changes to update filter values
+watch(
+  () => route.query,
+  () => {
+    if (route.query) {
+      filterValues.value = getSuspendedModFilterValuesFromParams({ route });
+    }
+  }
+);
+
+// Update search input via URL params
+const updateSearchInput = (searchInput: string) => {
+  updateFilters({
+    router,
+    route,
+    params: { searchInput },
+  });
+};
+
+// Load more functionality
+const loadMore = () => {
+  fetchMore({
+    variables: {
+      offset: suspensions.value.length,
+      limit: SUSPENDED_MODS_PAGE_LIMIT,
+    },
+    updateQuery: (previousResult, { fetchMoreResult }) => {
+      if (!fetchMoreResult) return previousResult;
+
+      return {
+        channels: [{
+          ...previousResult.channels[0],
+          SuspendedMods: [
+            ...previousResult.channels[0].SuspendedMods,
+            ...fetchMoreResult.channels[0].SuspendedMods,
+          ],
+        }],
+      };
+    },
+  });
+};
+
 defineEmits(["click-remove-mod"]);
 </script>
 <template>
   <div class="flex flex-col gap-3 py-3 dark:text-white">
+    <!-- Search Bar -->
+    <div class="mb-4">
+      <SearchBar
+        data-testid="suspended-mods-search-bar"
+        :initial-value="filterValues.searchInput"
+        :search-placeholder="'Search by display name'"
+        :auto-focus="false"
+        :small="true"
+        @update-search-input="updateSearchInput"
+      />
+    </div>
+
     <div v-if="loading">Loading...</div>
-    <div v-else-if="error">Error</div>
+    <ErrorBanner v-else-if="error" :text="error.message" />
     <div
       v-else-if="
         result?.channels?.length === 0 ||
-        result.channels[0]?.SuspendedMods?.length === 0
+        result?.channels[0]?.SuspendedMods?.length === 0
       "
       class="text-sm"
     >
-      There are no active mod suspensions.
+      <div v-if="searchInputComputed">
+        No suspended mods found matching "{{ searchInputComputed }}".
+      </div>
+      <div v-else>
+        There are no active mod suspensions.
+      </div>
     </div>
 
     <div v-if="suspensions && suspensions.length > 0" class="flex-col text-sm">
       <div class="text-sm font-bold">
-        {{ `Active Suspensions (${aggregateCount})` }}
+        {{ `Active Suspensions (${filteredAggregateCount})` }}
+        <span v-if="searchInputComputed" class="text-gray-500 dark:text-gray-400">
+          - showing results for "{{ searchInputComputed }}"
+        </span>
       </div>
       <div
         v-for="suspension in suspensions"
-        :key="suspension.username"
+        :key="suspension.id"
         class="flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded"
       >
         <div class="flex-col w-full">
@@ -101,6 +199,16 @@ defineEmits(["click-remove-mod"]);
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Load More -->
+    <div v-if="suspensions.length > 0">
+      <LoadMore
+        class="ml-4 justify-self-center"
+        :loading="loading"
+        :reached-end-of-results="filteredAggregateCount === suspensions.length"
+        @load-more="loadMore"
+      />
     </div>
   </div>
 </template>
