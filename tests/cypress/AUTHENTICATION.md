@@ -60,9 +60,13 @@ describe("Multi-user workflow", () => {
     };
     
     cy.switchToUser(user2Credentials);
-    cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
+    
+    // IMPORTANT: After user switch, wait before performing actions
+    // The switchToUser command sets auth state but doesn't trigger GraphQL requests
+    cy.wait(500); // Allow UI to update with new auth state
     
     // ... User 2 interacts with content ...
+    // Any GraphQL requests will now be authenticated as the new user
   });
 });
 ```
@@ -97,8 +101,9 @@ Make sure your `cypress.env.json` includes credentials for multiple users:
 
 ### Timing Issues
 - Increase wait times if needed, especially after user switches
-- Ensure GraphQL interception is set up before authentication
-- Use `cy.wait('@graphqlRequest')` after authentication calls
+- After `switchToUser()`, allow time for UI to update before performing actions
+- The `switchToUser()` command itself doesn't trigger GraphQL requests - wait for subsequent user actions
+- Use `cy.wait('@graphqlRequest')` after user actions, not after authentication calls
 
 ### State Not Clearing
 - The enhanced `clearAllAuthState()` should handle all Auth0 and app state

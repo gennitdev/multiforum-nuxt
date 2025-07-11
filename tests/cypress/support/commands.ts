@@ -412,23 +412,56 @@ Cypress.Commands.add("authenticateAsUserOnCurrentPage", (userCredentials: { user
 Cypress.Commands.add("switchToUser", (userCredentials: { username: string; password: string; displayName?: string }) => {
   console.log('🔀 Quick user switch to:', userCredentials.displayName || userCredentials.username);
   
-  // Clear current auth state
-  cy.clearAllAuthState();
-  
-  // Login as new user and sync state
-  cy.loginAsUser(userCredentials).then(() => {
+  // Properly chain the operations to ensure they execute in sequence
+  return cy.clearAllAuthState().then(() => {
+    console.log('🔀 Auth state cleared, logging in as new user');
+    
+    // Login as new user and sync state
+    return cy.loginAsUser(userCredentials);
+  }).then((accessToken) => {
+    console.log('🔀 New user token obtained, syncing UI state');
+    
+    // Sync the UI state with proper retry logic
     return cy.window().then((win) => {
       const testWin = win as any;
-      if (testWin.__SET_AUTH_STATE_DIRECT__) {
-        testWin.__SET_AUTH_STATE_DIRECT__({ 
-          username: userCredentials.displayName || userCredentials.username,
-          authenticated: true
-        });
-      }
+      
+      const syncAuthState = (retryCount = 0) => {
+        if (testWin.__SET_AUTH_STATE_DIRECT__) {
+          const displayName = userCredentials.displayName || userCredentials.username;
+          console.log(`🔀 Setting auth state for user: ${displayName}`);
+          
+          testWin.__SET_AUTH_STATE_DIRECT__({ 
+            username: displayName,
+            authenticated: true
+          });
+          
+          return Promise.resolve();
+        } else if (retryCount < 3) {
+          console.log(`🔀 Auth sync function not available, retrying... (attempt ${retryCount + 1})`);
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve(syncAuthState(retryCount + 1));
+            }, 200);
+          });
+        } else {
+          console.error('❌ Auth sync function not available after retries in switchToUser');
+          return Promise.resolve();
+        }
+      };
+      
+      return syncAuthState();
     });
+  }).then(() => {
+    // Verify the switch was successful
+    console.log('🔀 Verifying user switch completion');
+    
+    return cy.window().its('localStorage').invoke('getItem', 'token').should('exist').then((token) => {
+      console.log(`✅ User switch completed for ${userCredentials.username}`);
+      console.log(`🔑 Token verification: ${(token as string).substring(0, 20)}...`);
+    });
+  }).then(() => {
+    // Additional wait for UI to fully update
+    cy.wait(200);
+    console.log('🔀 User switch completed successfully');
   });
-  
-  // Verify the switch was successful
-  cy.window().its('localStorage').invoke('getItem', 'token').should('exist');
-  cy.wait(100); // Brief wait for UI to update
 });

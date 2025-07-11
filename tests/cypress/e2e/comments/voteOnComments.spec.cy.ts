@@ -112,6 +112,7 @@ describe("Comment voting operations", () => {
 
     // Navigate to the page first
     cy.visit(DISCUSSION_LIST);
+    cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
     
     // ENHANCED: Switch to User 2 with improved authentication
     const username2 = Cypress.env("auth0_username_2");
@@ -122,8 +123,6 @@ describe("Comment voting operations", () => {
       password: password2,
       displayName: 'testuser2'
     });
-    
-    cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     // Navigate to the same discussion
     cy.get("span").contains("Example topic 1").click();
