@@ -1,6 +1,20 @@
 <script setup>
 import CirclePlusIcon from '@/components/icons/CirclePlusIcon.vue';
-import { isAuthenticatedVar } from '@/cache';
+import { computed } from 'vue';
+import { useSSRAuth } from '@/composables/useSSRAuth';
+import { isLoadingAuthVar, usernameVar } from '@/cache';
+
+const { hasAuthHint } = useSSRAuth();
+
+// SSR-safe auth check
+const shouldShowAuthButton = computed(() => {
+  // In SSR, use auth hints
+  if (!import.meta.client) {
+    return hasAuthHint.value;
+  }
+  // On client, show if not loading and authenticated
+  return !isLoadingAuthVar.value && (usernameVar.value || hasAuthHint.value);
+});
 
 const props = defineProps({
   channelId: {
@@ -49,7 +63,7 @@ const handleAddToCollection = () => {
         {{ channelId }}
       </h1>
     </div>
-    <div v-if="isAuthenticatedVar" class="flex items-center pr-4">
+    <div v-if="shouldShowAuthButton" class="flex items-center pr-4">
       <button
         type="button"
         :aria-label="`Add ${channel?.displayName || channelId} to collection`"

@@ -239,32 +239,33 @@ const tabs = computed((): Tab[] => {
 </script>
 
 <template>
-  <div>
-    <!-- Desktop/Tablet Tabs (md and up) -->
-    <nav
-      v-if="mdAndUp"
-      aria-label="Tabs"
-      :class="
-        vertical ? 'text-md flex flex-col' : 'space-x-2 overflow-x-auto text-sm'
-      "
-    >
-      <TabButton
-        v-for="tab in tabs"
-        :key="tab.name"
-        :count="tab.countProperty === '__DOWNLOAD_COUNT__' ? downloadCount : (tab.countProperty ? channel[tab.countProperty]?.count : 0)"
-        :data-testid="`forum-tab-${desktop ? 'desktop' : 'mobile'}-${tab.name}`"
-        :is-active="route.path.includes(tab.routeSuffix)"
-        :label="tab.label"
-        :show-count="showCounts && !!tab.countProperty"
-        :to="tabRoutes[tab.name]"
-        :vertical="vertical"
+  <ClientOnly>
+    <div>
+      <!-- Desktop/Tablet Tabs (md and up) -->
+      <nav
+        v-if="mdAndUp"
+        aria-label="Tabs"
+        :class="
+          vertical ? 'text-md flex flex-col' : 'space-x-2 overflow-x-auto text-sm'
+        "
       >
-        <component :is="tab.icon" :class="iconSize" />
-      </TabButton>
-    </nav>
+        <TabButton
+          v-for="tab in tabs"
+          :key="tab.name"
+          :count="tab.countProperty === '__DOWNLOAD_COUNT__' ? downloadCount : (tab.countProperty ? channel[tab.countProperty]?.count : 0)"
+          :data-testid="`forum-tab-${desktop ? 'desktop' : 'mobile'}-${tab.name}`"
+          :is-active="route.path.includes(tab.routeSuffix)"
+          :label="tab.label"
+          :show-count="showCounts && !!tab.countProperty"
+          :to="tabRoutes[tab.name]"
+          :vertical="vertical"
+        >
+          <component :is="tab.icon" :class="iconSize" />
+        </TabButton>
+      </nav>
 
-    <!-- Mobile Dropdown (sm and down) -->
-    <div v-else class="relative">
+      <!-- Mobile Dropdown (sm and down) -->
+      <div v-else class="relative">
       <ClientOnly>
         <Popper>
           <template #default>
@@ -351,5 +352,29 @@ const tabs = computed((): Tab[] => {
         </template>
       </ClientOnly>
     </div>
-  </div>
+      </div>
+    <template #fallback>
+      <!-- SSR Fallback: Render desktop navigation by default -->
+      <nav
+        aria-label="Tabs"
+        :class="
+          vertical ? 'text-md flex flex-col' : 'space-x-2 overflow-x-auto text-sm'
+        "
+      >
+        <TabButton
+          v-for="tab in tabs"
+          :key="tab.name"
+          :count="tab.countProperty === '__DOWNLOAD_COUNT__' ? downloadCount : (tab.countProperty ? channel[tab.countProperty]?.count : 0)"
+          :data-testid="`forum-tab-${desktop ? 'desktop' : 'mobile'}-${tab.name}`"
+          :is-active="route.path.includes(tab.routeSuffix)"
+          :label="tab.label"
+          :show-count="showCounts && !!tab.countProperty"
+          :to="tabRoutes[tab.name]"
+          :vertical="vertical"
+        >
+          <component :is="tab.icon" :class="iconSize" />
+        </TabButton>
+      </nav>
+    </template>
+  </ClientOnly>
 </template>
