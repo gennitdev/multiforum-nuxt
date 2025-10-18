@@ -151,8 +151,12 @@ const filteredOptions = computed(() => {
 });
 
 // Get option by value
-const getOptionByValue = (value: any): MultiSelectOption | undefined => {
-  return props.options.find((option) => option.value === value);
+const getOptionByValue = (value: any): MultiSelectOption => {
+  // Try to find in current options
+  const option = props.options.find((option) => option.value === value);
+
+  // If not found (e.g., filtered out by search), return a simple fallback option
+  return option || { value, label: String(value) };
 };
 
 // Watch for external changes to modelValue
@@ -164,11 +168,9 @@ watch(
   { deep: true }
 );
 
-// Selected options for display
+// Selected options for display (independent of search filtering)
 const selectedOptions = computed(() => {
-  return selected.value
-    .map((value) => getOptionByValue(value))
-    .filter(Boolean) as MultiSelectOption[];
+  return selected.value.map((value) => getOptionByValue(value));
 });
 </script>
 
@@ -338,7 +340,7 @@ const selectedOptions = computed(() => {
                 :checked="selected.includes(option.value)"
                 :disabled="option.disabled"
                 class="h-4 w-4 rounded border border-gray-400 text-orange-600 checked:border-orange-600 checked:bg-orange-600 checked:text-white focus:ring-orange-500 dark:border-gray-500 dark:bg-gray-700"
-                @click.stop
+                readonly
               >
             </div>
 
