@@ -355,25 +355,37 @@ const tabs = computed((): Tab[] => {
     </div>
       </div>
     <template #fallback>
-      <!-- SSR Fallback: Render desktop navigation by default -->
+      <!-- SSR Fallback: Render basic navigation without reactive deps -->
       <nav
         aria-label="Tabs"
         :class="
           vertical ? 'text-md flex flex-col' : 'space-x-2 overflow-x-auto text-sm'
         "
       >
+        <!-- Always show Discussions -->
         <TabButton
-          v-for="tab in tabs"
-          :key="tab.name"
-          :count="tab.countProperty === '__DOWNLOAD_COUNT__' ? downloadCount : (tab.countProperty ? channel[tab.countProperty]?.count : 0)"
-          :data-testid="`forum-tab-${desktop ? 'desktop' : 'mobile'}-${tab.name}`"
-          :is-active="route.path.includes(tab.routeSuffix)"
-          :label="tab.label"
-          :show-count="showCounts && !!tab.countProperty"
-          :to="tabRoutes[tab.name]"
+          :count="showCounts ? channel.DiscussionChannelsAggregate?.count : 0"
+          :data-testid="`forum-tab-${desktop ? 'desktop' : 'mobile'}-discussions`"
+          :is-active="route.path.includes('discussions')"
+          label="Discussions"
+          :show-count="showCounts"
+          :to="`/forums/${forumId}/discussions`"
           :vertical="vertical"
         >
-          <component :is="tab.icon" :class="iconSize" />
+          <DiscussionIcon :class="iconSize" />
+        </TabButton>
+
+        <!-- Contributors tab -->
+        <TabButton
+          :count="0"
+          :data-testid="`forum-tab-${desktop ? 'desktop' : 'mobile'}-contributors`"
+          :is-active="route.path.includes('contributors')"
+          label="Contributors"
+          :show-count="false"
+          :to="`/forums/${forumId}/contributors`"
+          :vertical="vertical"
+        >
+          <UserIcon :class="iconSize" />
         </TabButton>
       </nav>
     </template>
