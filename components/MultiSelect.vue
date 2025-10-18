@@ -189,7 +189,9 @@ const selectedOptions = computed(() => {
         :data-testid="testId"
         :class="[
           'flex w-full cursor-pointer rounded-lg border px-4 text-left dark:border-gray-700 dark:bg-gray-700',
-          showChips ? 'min-h-10 flex-wrap items-center' : 'min-h-12 items-start py-2',
+          showChips
+            ? 'min-h-10 flex-wrap items-center'
+            : 'min-h-12 items-start py-2',
         ]"
         @click="toggleDropdown"
       >
@@ -209,9 +211,9 @@ const selectedOptions = computed(() => {
               :src="option.avatar"
               :alt="option.label"
               class="mr-1 h-4 w-4 rounded-full"
-            >
+            />
             <!-- Icon if provided -->
-            <i v-else-if="option.icon" :class="[option.icon, 'mr-1']"/>
+            <i v-else-if="option.icon" :class="[option.icon, 'mr-1']" />
 
             <span>{{ option.label }}</span>
             <span
@@ -234,7 +236,7 @@ const selectedOptions = computed(() => {
             :src="selectedOptions[0]?.avatar"
             :alt="selectedOptions[0]?.label"
             class="mr-2 h-6 w-6 flex-shrink-0 rounded-full"
-          >
+          />
           <i
             v-else-if="selectedOptions.length === 1 && selectedOptions[0]?.icon"
             :class="[selectedOptions[0]?.icon, 'mr-2 flex-shrink-0']"
@@ -264,7 +266,7 @@ const selectedOptions = computed(() => {
             :title="'Clear selection'"
             @click.stop="clearSelection"
           >
-            <i class="fa-solid fa-times"/>
+            <i class="fa-solid fa-times" />
           </button>
 
           <!-- Dropdown arrow -->
@@ -307,7 +309,7 @@ const selectedOptions = computed(() => {
             @click.stop
             @focus.stop
             @blur.stop
-          >
+          />
         </div>
 
         <!-- Loading state -->
@@ -341,7 +343,7 @@ const selectedOptions = computed(() => {
                 :disabled="option.disabled"
                 class="h-4 w-4 rounded border border-gray-400 text-orange-600 checked:border-orange-600 checked:bg-orange-600 checked:text-white focus:ring-orange-500 dark:border-gray-500 dark:bg-gray-700"
                 readonly
-              >
+              />
             </div>
 
             <!-- Avatar -->
@@ -350,10 +352,13 @@ const selectedOptions = computed(() => {
               :src="option.avatar"
               :alt="option.label"
               class="mr-3 h-6 w-6 rounded-full"
-            >
+            />
 
             <!-- Icon -->
-            <i v-else-if="option.icon" :class="[option.icon, 'mr-3']"/>
+            <i
+              v-else-if="option.icon"
+              :class="[option.icon, 'mr-3 dark:text-white']"
+            />
 
             <!-- Label -->
             <span class="flex-1 text-sm text-gray-900 dark:text-white">
