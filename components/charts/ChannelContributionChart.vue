@@ -4,7 +4,7 @@ import { useUIStore } from '@/stores/uiStore';
 import ContributionLineChart from './ContributionLineChart.vue';
 import type { DayData } from '@/types/contribution';
 
-const props = defineProps<{
+defineProps<{
   dayData: DayData[];
   maxYValue?: number;
 }>();

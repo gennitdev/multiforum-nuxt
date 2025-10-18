@@ -19,18 +19,6 @@
 
 ### Cypress Test Optimizations
 
-- **Replace arbitrary timeouts with network waits**:
-
-  ```javascript
-  // Before: Fixed timeout that might be too short or too long
-  cy.get('button').contains('Save').click().wait(3000);
-
-  // After: Wait for the actual network request to complete
-  cy.intercept('POST', '**/graphql').as('graphqlRequest');
-  cy.get('button').contains('Save').click();
-  cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
-  ```
-
 - **Validate network responses**: Add status code checks to ensure operations completed successfully
 
   ```javascript
@@ -86,6 +74,52 @@
   - TS and Vue files: ESLint + unit tests
   - Test files: Run the specific test that changed
 - To skip pre-commit hooks temporarily: `git commit --no-verify`
+
+## Component Architecture Preferences:
+
+1. Separation of Concerns
+
+- Child components are ignorant of parent state/layout - they never manage showEditor,
+  hideEditor, or similar display state
+- Each component has a single, clear responsibility
+
+1. Reusable UI Components (like InPlaceTagEditor)
+
+- Pure UI only - no mutations, no business logic
+- Edit mode only - view mode belongs in parent components
+- Emit generic, simple events: save, cancel
+- Accept minimal props: data needed for editing, loading/error states
+- Use props as ref defaults: ref([...props.existingTags]) not onMounted
+
+1. Wrapper Components (like ChannelTagEditor, DiscussionTagEditor)
+
+- Handle domain-specific mutations (UPDATE_CHANNEL, UPDATE_DISCUSSION)
+- Translate between child events and mutation lifecycle
+- Emit domain-specific events:
+  - done on successful save (via onDone hook)
+  - cancel passed through from child
+  - refetch for data updates
+- Still don't manage display state - that's the parent's job
+
+1. Parent Components (like ChannelSidebar, DiscussionBody)
+
+- Manage display state with refs (showTagEditor)
+- Render both view mode (tags + edit button) and edit mode (wrapper component)
+- Listen to events from wrappers (@done, @cancel) to close editor
+- Control the entire UX flow
+
+1. Event Naming
+
+- Be clear and specific - no misleading names
+- done = successful completion
+- cancel = user cancelled
+- Don't call cancel "done" or vice versa
+
+1. Avoid Unnecessary Complexity
+
+- Use onDone hooks, not watchers
+- Use props as ref defaults, not onMounted
+- Keep it simple and direct
 
 ## Code Style Guidelines
 
@@ -276,12 +310,10 @@ The application has two separate but related permission systems:
 ### User Permission Levels
 
 1. **Standard Users**:
-
    - Use the DefaultChannelRole for the channel (or DefaultServerRole as fallback)
    - Have permissions like createDiscussion, createComment, upvoteContent, etc.
 
 2. **Channel Admins/Owners**:
-
    - Users in the `Channel.Admins` list
    - Have all user and moderator permissions automatically
 
@@ -292,14 +324,12 @@ The application has two separate but related permission systems:
 ### Moderator Permission Levels
 
 1. **Standard/Normal Moderators**:
-
    - All authenticated users are considered standard moderators by default
    - Not explicitly included in `Channel.Moderators` list, not in `Channel.SuspendedMods`
    - Can perform basic moderation actions (report, give feedback) based on DefaultModRole
    - These permissions are controlled by the DefaultModRole configuration
 
 2. **Elevated Moderators**:
-
    - Explicitly included in the `Channel.Moderators` list
    - Have additional permissions beyond standard moderators
    - Can typically archive content, manage other moderators, etc.
@@ -320,9 +350,7 @@ The application has two separate but related permission systems:
   - Channel owners/admins bypass all permission checks (both user and mod)
   - Suspended status overrides all other status for that permission type
 - **Fallback Chain**:
-
   - Channel-specific roles -> Server default roles -> Deny access
-
 - **User vs. Mod Actions**:
   - Some UI actions require BOTH user and mod permissions
   - For example, to archive content: need canHideDiscussion (mod) AND be an elevated mod or admin

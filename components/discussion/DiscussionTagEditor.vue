@@ -14,17 +14,9 @@ const props = defineProps({
     type: Array as PropType<TagData[]>,
     required: true,
   },
-  canEdit: {
-    type: Boolean,
-    required: true,
-  },
-  onTagClick: {
-    type: Function as PropType<(tag: string) => void>,
-    default: null,
-  },
 });
 
-const emit = defineEmits(['refetch']);
+const emit = defineEmits(['refetch', 'done', 'cancel']);
 
 const existingTagStrings = computed(() => {
   return props.existingTags.map((tag) => tag.text);
@@ -39,6 +31,7 @@ const {
 
 onUpdateDiscussionDone(() => {
   emit('refetch');
+  emit('done');
 });
 
 const saveTags = (selectedTags: string[]) => {
@@ -67,8 +60,7 @@ const saveTags = (selectedTags: string[]) => {
     :existing-tags="existingTagStrings"
     :loading="updateDiscussionLoading"
     :error="updateDiscussionError?.message || ''"
-    :can-edit="canEdit"
-    :on-tag-click="onTagClick"
     @save="saveTags"
+    @cancel="emit('cancel')"
   />
 </template>

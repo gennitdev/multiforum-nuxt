@@ -12,6 +12,7 @@ import AddToChannelFavorites from '@/components/favorites/AddToChannelFavorites.
 import { isAuthenticatedVar, usernameVar, modProfileNameVar } from '@/cache';
 import { checkPermission } from '@/utils/permissionUtils';
 import ChannelTagEditor from '@/components/channel/ChannelTagEditor.vue';
+import Tag from '@/components/TagComponent.vue';
 
 const props = defineProps({
   channel: {
@@ -64,6 +65,17 @@ const closeBecomeAdminModal = () => {
 
 const handleBecomeAdminSuccess = () => {
   emit('refetchChannelData');
+};
+
+// Tag editor state
+const showTagEditor = ref(false);
+
+const showEditor = () => {
+  showTagEditor.value = true;
+};
+
+const hideTagEditor = () => {
+  showTagEditor.value = false;
 };
 
 // Check if user has permission to update channel
@@ -180,15 +192,43 @@ const canUpdateChannel = computed(() => {
               >
                 <i class="fa-solid fa-tags mr-2" />Tags
               </span>
+              <button
+                v-if="canUpdateChannel && !showTagEditor"
+                class="text-xs text-orange-500 hover:text-orange-600 dark:text-orange-400 dark:hover:text-orange-300"
+                @click="showEditor"
+              >
+                <i class="fa-solid fa-pen-to-square mr-1" />
+                Edit
+              </button>
             </div>
 
-            <ChannelTagEditor
-              :channel-unique-name="channel.uniqueName"
-              :existing-tags="channel.Tags || []"
-              :can-edit="canUpdateChannel"
-              :on-tag-click="filterChannelsByTag"
-              @refetch="emit('refetchChannelData')"
-            />
+            <!-- View Mode -->
+            <div v-if="!showTagEditor" class="mb-6 mt-2 flex flex-wrap gap-2">
+              <Tag
+                v-for="tag in channel.Tags"
+                :key="tag.text"
+                class="mb-1"
+                :tag="tag.text"
+                @click="filterChannelsByTag(tag.text)"
+              />
+              <p
+                v-if="channel.Tags.length === 0 && canUpdateChannel"
+                class="text-sm text-gray-500 dark:text-gray-400"
+              >
+                No tags yet. Click Edit to add tags.
+              </p>
+            </div>
+
+            <!-- Edit Mode -->
+            <div v-else class="mb-6">
+              <ChannelTagEditor
+                :channel-unique-name="channel.uniqueName"
+                :existing-tags="channel.Tags || []"
+                @refetch="emit('refetchChannelData')"
+                @done="hideTagEditor"
+                @cancel="hideTagEditor"
+              />
+            </div>
           </div>
 
           <FontSizeControl v-if="isDiscussionDetailPage" class="mb-6" />

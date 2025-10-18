@@ -5,6 +5,7 @@ import EmojiButtons from '@/components/comments/EmojiButtons.vue';
 import NewEmojiButton from '@/components/comments/NewEmojiButton.vue';
 import RequireAuth from '@/components/auth/RequireAuth.vue';
 import DiscussionTagEditor from '@/components/discussion/DiscussionTagEditor.vue';
+import Tag from '@/components/TagComponent.vue';
 import 'md-editor-v3/lib/preview.css';
 import type { PropType } from 'vue';
 import type { Discussion } from '@/__generated__/graphql';
@@ -69,6 +70,17 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['refetchDiscussion']);
+
+// Tag editor state
+const showTagEditor = ref(false);
+
+const showEditor = () => {
+  showTagEditor.value = true;
+};
+
+const hideTagEditor = () => {
+  showTagEditor.value = false;
+};
 
 // Check if user can edit tags (user must be the discussion author)
 const canEditTags = computed(() => {
@@ -191,14 +203,46 @@ const hasEmoiji = computed(() => {
         :emoji-json="emojiJson"
       />
     </div>
-    <DiscussionTagEditor
-      v-if="discussion"
-      :discussion-id="discussion.id"
-      :existing-tags="discussion.Tags || []"
-      :can-edit="canEditTags"
-      :on-tag-click="filterByTag"
-      @refetch="emit('refetchDiscussion')"
-    />
+    <div v-if="discussion && ((discussion.Tags && discussion.Tags.length > 0) || canEditTags)">
+      <div class="flex items-center justify-between">
+        <button
+          v-if="canEditTags && !showTagEditor"
+          class="text-xs text-orange-500 hover:text-orange-600 dark:text-orange-400 dark:hover:text-orange-300"
+          @click="showEditor"
+        >
+          <i class="fa-solid fa-pen-to-square mr-1" />
+          Edit tags
+        </button>
+      </div>
+
+      <!-- View Mode -->
+      <div v-if="!showTagEditor" class="mt-2 flex flex-wrap gap-2">
+        <Tag
+          v-for="tag in discussion.Tags"
+          :key="tag.text"
+          class="mb-1"
+          :tag="tag.text"
+          @click="filterByTag(tag.text)"
+        />
+        <p
+          v-if="(!discussion.Tags || discussion.Tags.length === 0) && canEditTags"
+          class="text-sm text-gray-500 dark:text-gray-400"
+        >
+          No tags yet. Click "Edit tags" to add tags.
+        </p>
+      </div>
+
+      <!-- Edit Mode -->
+      <div v-else>
+        <DiscussionTagEditor
+          :discussion-id="discussion.id"
+          :existing-tags="discussion.Tags || []"
+          @refetch="emit('refetchDiscussion')"
+          @done="hideTagEditor"
+          @cancel="hideTagEditor"
+        />
+      </div>
+    </div>
 
     <div v-if="!downloadMode">
       <slot name="mark-answered-slot" />
