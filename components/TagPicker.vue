@@ -24,8 +24,13 @@ const emit = defineEmits(['setSelectedTags']);
 
 const searchQuery = ref('');
 
-const { mutate: createTag, loading: createTagLoading } =
+const { mutate: createTag, loading: createTagLoading, onError: onCreateTagError } =
   useMutation(CREATE_TAG);
+
+onCreateTagError((error) => {
+  console.error('Tag creation mutation error:', error);
+  alert('Failed to create tag: ' + error.message);
+});
 
 const {
   loading: tagsLoading,
@@ -39,7 +44,7 @@ const {
     },
   })),
   {
-    fetchPolicy: 'cache-first',
+    fetchPolicy: 'cache-and-network',
   }
 );
 

@@ -202,7 +202,7 @@ const navigateTo = async (route: RouteLocationAsRelativeGeneric) => {
 
 const getIconCircleClasses = (isActive: boolean) => {
   const baseClasses =
-    'w-12 h-12 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors duration-200 cursor-pointer';
+    'w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors duration-200 cursor-pointer';
   return isActive
     ? `${baseClasses} ring-1 ring-orange-500 ring-offset-1 ring-offset-gray-900`
     : baseClasses;
@@ -210,7 +210,7 @@ const getIconCircleClasses = (isActive: boolean) => {
 
 const getForumIconClasses = (isActive: boolean) => {
   const baseClasses =
-    'w-12 h-12 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors duration-200 cursor-pointer overflow-hidden';
+    'w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors duration-200 cursor-pointer overflow-hidden';
   return isActive
     ? `${baseClasses} ring-2 ring-orange-500 ring-offset-0`
     : baseClasses;
