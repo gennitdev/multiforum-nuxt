@@ -97,13 +97,14 @@ const { hasAuthHint, usernameHint } = useSSRAuth();
 
 // Check if auth is still loading or if we should show auth-dependent tabs
 const shouldShowAuthTabs = computed(() => {
-  // In SSR, we can use auth hints to show tabs if user was previously logged in
-  if (!import.meta.client) {
+  // Always use auth hints for initial render consistency (SSR + client hydration)
+  // This ensures server and client render the same tabs
+  if (!import.meta.client || isLoadingAuthVar.value) {
     return hasAuthHint.value;
   }
-  
-  // On client-side, show auth tabs if not loading and user is authenticated
-  return !isLoadingAuthVar.value && (usernameVar.value || hasAuthHint.value);
+
+  // After auth finishes loading on client, use actual auth state
+  return usernameVar.value || hasAuthHint.value;
 });
 
 const tabRoutes = computed(() => {
