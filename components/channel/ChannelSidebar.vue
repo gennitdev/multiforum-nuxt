@@ -1,8 +1,7 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
 import type { PropType } from 'vue';
-import Tag from '@/components/TagComponent.vue';
-import type { Channel, Tag as TagData } from '@/__generated__/graphql';
+import type { Channel } from '@/__generated__/graphql';
 import ChannelRules from '@/components/channel/Rules.vue';
 import SidebarEventList from '@/components/channel/SidebarEventList.vue';
 import MarkdownPreview from '@/components/MarkdownPreview.vue';
@@ -12,9 +11,7 @@ import BecomeAdminModal from '@/components/channel/BecomeAdminModal.vue';
 import AddToChannelFavorites from '@/components/favorites/AddToChannelFavorites.vue';
 import { isAuthenticatedVar, usernameVar, modProfileNameVar } from '@/cache';
 import { checkPermission } from '@/utils/permissionUtils';
-import { useMutation } from '@vue/apollo-composable';
-import { UPDATE_CHANNEL } from '@/graphQLData/channel/mutations';
-import TagPicker from '@/components/TagPicker.vue';
+import ChannelTagEditor from '@/components/channel/ChannelTagEditor.vue';
 
 const props = defineProps({
   channel: {
@@ -69,10 +66,6 @@ const handleBecomeAdminSuccess = () => {
   emit('refetchChannelData');
 };
 
-// Tag editing functionality
-const isEditingTags = ref(false);
-const selectedTags = ref<string[]>([]);
-
 // Check if user has permission to update channel
 const canUpdateChannel = computed(() => {
   if (!isAuthenticatedVar.value || !props.channel) {
@@ -101,64 +94,6 @@ const canUpdateChannel = computed(() => {
     action: 'canUpdateChannel',
   });
 });
-
-// Show tags section if there are tags OR if user can edit tags
-const showTagsSection = computed(() => {
-  return (props.channel?.Tags?.length ?? 0) > 0 || canUpdateChannel.value;
-});
-
-const existingTags = computed(() => {
-  return props.channel?.Tags?.map((tag: TagData) => tag.text) || [];
-});
-
-const startEditingTags = () => {
-  selectedTags.value = [...existingTags.value];
-  isEditingTags.value = true;
-};
-
-const cancelEditingTags = () => {
-  isEditingTags.value = false;
-  selectedTags.value = [];
-};
-
-const {
-  mutate: updateChannel,
-  loading: updateChannelLoading,
-  error: updateChannelError,
-  onDone: onUpdateChannelDone,
-} = useMutation(UPDATE_CHANNEL);
-
-onUpdateChannelDone(() => {
-  isEditingTags.value = false;
-  selectedTags.value = [];
-  emit('refetchChannelData');
-});
-
-const saveTags = () => {
-  if (!props.channel?.uniqueName) return;
-
-  const tagConnections = selectedTags.value.map((tag: string) => ({
-    onCreate: { node: { text: tag } },
-    where: { node: { text: tag } },
-  }));
-
-  const tagDisconnections = existingTags.value
-    .filter((tag: string) => !selectedTags.value.includes(tag))
-    .map((tag: string) => ({
-      where: { node: { text: tag } },
-    }));
-
-  updateChannel({
-    where: { uniqueName: props.channel.uniqueName },
-    update: {
-      Tags: [{ connectOrCreate: tagConnections, disconnect: tagDisconnections }],
-    },
-  });
-};
-
-const updateSelectedTags = (tags: string[]) => {
-  selectedTags.value = tags;
-};
 </script>
 
 <template>
@@ -238,74 +173,22 @@ const updateSelectedTags = (tags: string[]) => {
             :event-channels-aggregate="eventChannelsAggregate"
           />
 
-          <div v-if="showTagsSection">
+          <div v-if="(channel?.Tags?.length ?? 0) > 0 || canUpdateChannel">
             <div class="flex items-center justify-between border-gray-300">
               <span
                 class="my-2 mb-2 flex items-center text-sm font-bold leading-6 text-gray-500 dark:text-gray-400"
               >
                 <i class="fa-solid fa-tags mr-2" />Tags
               </span>
-              <button
-                v-if="canUpdateChannel && !isEditingTags"
-                class="text-xs text-orange-500 hover:text-orange-600 dark:text-orange-400 dark:hover:text-orange-300"
-                @click="startEditingTags"
-              >
-                <i class="fa-solid fa-pen-to-square mr-1" />
-                Edit
-              </button>
             </div>
 
-            <!-- View Mode -->
-            <div v-if="!isEditingTags" class="mb-6 mt-2 flex flex-wrap gap-2">
-              <Tag
-                v-for="tag in channel.Tags"
-                :key="tag.text"
-                class="mb-1"
-                :tag="tag.text"
-                @click="filterChannelsByTag(tag.text)"
-              />
-              <p
-                v-if="channel.Tags.length === 0 && canUpdateChannel"
-                class="text-sm text-gray-500 dark:text-gray-400"
-              >
-                No tags yet. Click Edit to add tags.
-              </p>
-            </div>
-
-            <!-- Edit Mode -->
-            <div v-else class="mb-6 mt-2">
-              <TagPicker
-                :selected-tags="selectedTags"
-                description=""
-                @set-selected-tags="updateSelectedTags"
-              />
-
-              <!-- Error Message -->
-              <div
-                v-if="updateChannelError"
-                class="mt-2 text-sm text-red-500 dark:text-red-400"
-              >
-                Failed to save tags: {{ updateChannelError.message }}
-              </div>
-
-              <!-- Action Buttons -->
-              <div class="mt-3 flex gap-2">
-                <button
-                  class="rounded-md bg-orange-500 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
-                  :disabled="updateChannelLoading"
-                  @click="saveTags"
-                >
-                  {{ updateChannelLoading ? 'Saving...' : 'Save' }}
-                </button>
-                <button
-                  class="rounded-md border border-gray-300 px-3 py-1 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-                  :disabled="updateChannelLoading"
-                  @click="cancelEditingTags"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
+            <ChannelTagEditor
+              :channel-unique-name="channel.uniqueName"
+              :existing-tags="channel.Tags || []"
+              :can-edit="canUpdateChannel"
+              :on-tag-click="filterChannelsByTag"
+              @refetch="emit('refetchChannelData')"
+            />
           </div>
 
           <FontSizeControl v-if="isDiscussionDetailPage" class="mb-6" />

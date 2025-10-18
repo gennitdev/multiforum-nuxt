@@ -75,6 +75,7 @@ const hasAlbum = computed(() => {
         :download-mode="true"
         :emoji-json="activeDiscussionChannel?.emoji"
         :show-emoji-button="false"
+        @refetch-discussion="emit('discussionRefetch')"
       >
         <template #album-slot>
           <div class="mt-1 bg-black text-white">

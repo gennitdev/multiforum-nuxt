@@ -3,8 +3,8 @@ import { ref, computed, onMounted } from 'vue';
 import MarkdownPreview from '@/components/MarkdownPreview.vue';
 import EmojiButtons from '@/components/comments/EmojiButtons.vue';
 import NewEmojiButton from '@/components/comments/NewEmojiButton.vue';
-import Tag from '../../TagComponent.vue';
 import RequireAuth from '@/components/auth/RequireAuth.vue';
+import DiscussionTagEditor from '@/components/discussion/DiscussionTagEditor.vue';
 import 'md-editor-v3/lib/preview.css';
 import type { PropType } from 'vue';
 import type { Discussion } from '@/__generated__/graphql';
@@ -66,6 +66,13 @@ const props = defineProps({
     required: false,
     default: 1000,
   },
+});
+
+const emit = defineEmits(['refetchDiscussion']);
+
+// Check if user can edit tags (user must be the discussion author)
+const canEditTags = computed(() => {
+  return props.discussion?.Author?.username === usernameVar.value;
 });
 
 // Computed properties for discussion body and links
@@ -184,18 +191,14 @@ const hasEmoiji = computed(() => {
         :emoji-json="emojiJson"
       />
     </div>
-    <div
-      v-if="discussion?.Tags && discussion.Tags.length > 0"
-      class="flex gap-2"
-    >
-      <Tag
-        v-for="tag in discussion?.Tags"
-        :key="tag.text"
-        class="mt-2"
-        :tag="tag.text"
-        @click="filterByTag(tag.text)"
-      />
-    </div>
+    <DiscussionTagEditor
+      v-if="discussion"
+      :discussion-id="discussion.id"
+      :existing-tags="discussion.Tags || []"
+      :can-edit="canEditTags"
+      :on-tag-click="filterByTag"
+      @refetch="emit('refetchDiscussion')"
+    />
 
     <div v-if="!downloadMode">
       <slot name="mark-answered-slot" />
