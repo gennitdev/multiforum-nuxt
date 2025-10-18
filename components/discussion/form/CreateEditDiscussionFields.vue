@@ -29,6 +29,7 @@ const props = defineProps<{
   updateDiscussionLoading?: boolean;
   channelData?: Channel;
   discussion?: Discussion;
+  allowMultiple?: boolean;
 }>();
 
 defineEmits(['submit', 'updateFormValues', 'cancel']);
@@ -165,6 +166,7 @@ onMounted(() => {
                       : undefined
                   "
                   :existing-download-labels="formValues.downloadLabels || {}"
+                  :allow-multiple="allowMultiple ?? true"
                   @close-editor="() => {}"
                   @update-form-values="
                     (downloadData) => {

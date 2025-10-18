@@ -45,6 +45,11 @@ const props = defineProps({
     type: Object as PropType<Record<string, string[]>>,
     default: () => ({}),
   },
+  // Allow multiple selection in label picker
+  allowMultiple: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 const emit = defineEmits(['closeEditor', 'updateFormValues']);
@@ -658,6 +663,7 @@ function handleSave() {
           <DownloadLabelPicker
             :filter-groups="channelData.FilterGroups || []"
             :selected-labels="formValues.downloadLabels"
+            :allow-multiple="allowMultiple"
             @update:selected-labels="
               (newLabels) => {
                 console.log('DownloadEditForm received label update:', newLabels);

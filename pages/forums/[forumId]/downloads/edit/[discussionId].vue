@@ -362,7 +362,7 @@ export default defineComponent({
         };
       }
 
-      // If the album already exists, build the connect/update/delete arrays
+      // If the album already exists, build the connect/disconnect arrays
       const oldImages = discussion.value?.Album?.Images ?? [];
       const newImages = albumData.images || [];
 
@@ -377,21 +377,6 @@ export default defineComponent({
           ],
         }));
 
-      // UPDATE array: existing images that need updates
-      const updateImageArray = newImages
-        .filter((img) => img.id && oldImages.some((old) => old.id === img.id))
-        .map((img) => ({
-          where: { node: { id: img.id } },
-          update: {
-            node: {
-              url: img.url,
-              alt: img.alt,
-              caption: img.caption,
-              copyright: img.copyright,
-            },
-          },
-        }));
-
       // DISCONNECT array: old images that are no longer present
       const disconnectImageArray = oldImages
         .filter((old) => !newImages.some((img) => img.id === old.id))
@@ -403,10 +388,11 @@ export default defineComponent({
           ],
         }));
 
-      // Combine all operations into a single array. Each object is one "Images" operation.
+      // Combine connect and disconnect operations
+      // Note: We don't update existing images because they're standalone entities
+      // with their own OriginalUploader relationship that shouldn't be modified
       const imagesOps = [
         ...connectImageArray,
-        ...updateImageArray,
         ...disconnectImageArray,
       ];
 
@@ -638,6 +624,7 @@ export default defineComponent({
           :download-mode="true"
           :discussion="discussion"
           :channel-data="channelData"
+          :allow-multiple="false"
           @submit="submit"
           @update-form-values="updateFormValues"
           @cancel="handleCancel"

@@ -15,6 +15,10 @@ const props = defineProps({
     type: Object as PropType<Record<string, string[]>>,
     default: () => ({}),
   },
+  allowMultiple: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 const emit = defineEmits<{
@@ -40,10 +44,16 @@ const toggleLabel = (groupKey: string, optionValue: string) => {
   const index = currentSelection.indexOf(optionValue);
 
   let newSelection: string[];
-  if (index === -1) {
-    newSelection = [...currentSelection, optionValue];
+  if (!props.allowMultiple) {
+    // Single selection mode: toggle the value on/off
+    newSelection = index === -1 ? [optionValue] : [];
   } else {
-    newSelection = currentSelection.filter((val) => val !== optionValue);
+    // Multiple selection mode: add or remove from array
+    if (index === -1) {
+      newSelection = [...currentSelection, optionValue];
+    } else {
+      newSelection = currentSelection.filter((val) => val !== optionValue);
+    }
   }
 
   const updatedLabels = {
@@ -129,6 +139,7 @@ const selectedLabelCount = computed(() => {
             :options="getMultiSelectOptions(group)"
             placeholder="None selected"
             :show-chips="false"
+            :multiple="allowMultiple"
             searchable
             search-placeholder="Search options..."
             @update:model-value="handleMultiSelectUpdate(group.key, $event)"
