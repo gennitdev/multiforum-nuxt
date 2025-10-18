@@ -251,14 +251,14 @@ const canUpdateChannel = computed(() => {
                   name: 'u-username',
                   params: { username: admin.username },
                 }"
-                class="flex items-center dark:text-white"
+                class="flex items-start dark:text-white"
               >
                 <AvatarComponent
                   :text="admin.username"
                   :src="admin.profilePicURL ?? ''"
-                  class="mr-2 h-6 w-6"
+                  class="mr-2 h-6 w-6 shrink-0"
                 />
-                <span class="flex flex-row items-center gap-1">
+                <span class="min-w-0 break-words">
                   <span v-if="!admin.displayName" class="font-bold">{{
                     admin.username
                   }}</span>
@@ -266,8 +266,9 @@ const canUpdateChannel = computed(() => {
                   <span
                     v-if="admin.displayName"
                     class="text-gray-500 dark:text-gray-300"
-                    >{{ `(u/${admin.username})` }}</span
                   >
+                    {{ ` (u/${admin.username})` }}
+                  </span>
                 </span>
               </nuxt-link>
             </div>
