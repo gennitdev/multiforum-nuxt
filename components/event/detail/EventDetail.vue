@@ -25,9 +25,10 @@ import EventRootCommentFormWrapper from '@/components/event/detail/EventRootComm
 import { getSortFromQuery } from '@/components/comments/getSortFromQuery';
 import EventChannelLinks from '@/components/event/detail/EventChannelLinks.vue';
 import { useRoute, useHead } from 'nuxt/app';
-import { modProfileNameVar } from '@/cache';
+import { modProfileNameVar, usernameVar } from '@/cache';
 import AddToCalendarButton from '../AddToCalendarButton.vue';
 import ArchivedEventInfoBanner from './ArchivedEventInfoBanner.vue';
+import EventTagEditor from '@/components/event/EventTagEditor.vue';
 
 const formatDate = (date: string) => {
   return DateTime.fromISO(date).toLocaleString(DateTime.DATE_FULL);
@@ -254,6 +255,22 @@ const handleClickEditEventDescription = () => {
   eventDescriptionEditMode.value = true;
 };
 
+// Tag editor state
+const showTagEditor = ref(false);
+
+const showEditor = () => {
+  showTagEditor.value = true;
+};
+
+const hideTagEditor = () => {
+  showTagEditor.value = false;
+};
+
+// Check if user can edit tags (user must be the event poster)
+const canEditTags = computed(() => {
+  return event.value?.Poster?.username === usernameVar.value;
+});
+
 // Add SEO metadata for the event
 watchEffect(() => {
   if (!event.value) {
@@ -463,14 +480,43 @@ watchEffect(() => {
               />
             </div>
 
-            <div v-if="event.Tags?.length > 0" class="my-2 px-0 sm:px-4">
-              <div class="flex space-x-1">
+            <div v-if="event && ((event.Tags && event.Tags.length > 0) || canEditTags)" class="my-2 px-0 sm:px-4">
+              <div class="flex items-center justify-between">
+                <button
+                  v-if="canEditTags && !showTagEditor"
+                  class="text-xs text-orange-500 hover:text-orange-600 dark:text-orange-400 dark:hover:text-orange-300"
+                  @click="showEditor"
+                >
+                  <i class="fa-solid fa-pen-to-square mr-1" />
+                  Edit tags
+                </button>
+              </div>
+
+              <!-- View Mode -->
+              <div v-if="!showTagEditor" class="mt-2 flex flex-wrap gap-2">
                 <Tag
                   v-for="tag in event.Tags"
                   :key="tag.text"
-                  class="mt-2"
+                  class="mb-1"
                   :tag="tag.text"
                   :event-id="eventId"
+                />
+                <p
+                  v-if="(!event.Tags || event.Tags.length === 0) && canEditTags"
+                  class="text-sm text-gray-500 dark:text-gray-400"
+                >
+                  No tags yet. Click "Edit tags" to add tags.
+                </p>
+              </div>
+
+              <!-- Edit Mode -->
+              <div v-else>
+                <EventTagEditor
+                  :event-id="event.id"
+                  :existing-tags="event.Tags || []"
+                  @refetch="loadEvent"
+                  @done="hideTagEditor"
+                  @cancel="hideTagEditor"
                 />
               </div>
             </div>

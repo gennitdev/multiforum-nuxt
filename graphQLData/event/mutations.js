@@ -22,6 +22,26 @@ export const CREATE_EVENT_WITH_CHANNEL_CONNECTIONS = gql`
   ${EVENT_FIELDS}
 `;
 
+export const UPDATE_EVENT = gql`
+  mutation updateEvent(
+    $where: EventWhere!
+    $updateEventInput: EventUpdateInput!
+  ) {
+    updateEvents(where: $where, update: $updateEventInput) {
+      events {
+        id
+        title
+        description
+        createdAt
+        updatedAt
+        Tags {
+          text
+        }
+      }
+    }
+  }
+`;
+
 export const UPDATE_EVENT_WITH_CHANNEL_CONNECTIONS = gql`
   mutation updateEvents(
     $updateEventInput: EventUpdateInput!
