@@ -8,22 +8,12 @@ vi.mock('@vue/apollo-composable', () => ({
   useQuery: vi.fn(() => ({
     loading: ref(false),
     result: ref({ tags: [] }),
-    refetch: vi.fn(),
-  })),
-  useMutation: vi.fn(() => ({
-    mutate: vi.fn(),
-    loading: ref(false),
-    onError: vi.fn(),
   })),
 }));
 
 // Mock GraphQL queries
 vi.mock('@/graphQLData/tag/queries', () => ({
   GET_TAGS: {},
-}));
-
-vi.mock('@/graphQLData/tag/mutations', () => ({
-  CREATE_TAG: {},
 }));
 
 // Use real MultiSelect component

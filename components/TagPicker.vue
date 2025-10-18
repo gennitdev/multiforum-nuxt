@@ -1,9 +1,8 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue';
 import type { PropType } from 'vue';
-import { useQuery, useMutation } from '@vue/apollo-composable';
+import { useQuery } from '@vue/apollo-composable';
 import { GET_TAGS } from '@/graphQLData/tag/queries';
-import { CREATE_TAG } from '@/graphQLData/tag/mutations';
 import MultiSelect from '@/components/MultiSelect.vue';
 import type { MultiSelectOption } from '@/components/MultiSelect.vue';
 import type { Tag } from '@/__generated__/graphql';
@@ -24,18 +23,9 @@ const emit = defineEmits(['setSelectedTags']);
 
 const searchQuery = ref('');
 
-const { mutate: createTag, loading: createTagLoading, onError: onCreateTagError } =
-  useMutation(CREATE_TAG);
-
-onCreateTagError((error) => {
-  console.error('Tag creation mutation error:', error);
-  alert('Failed to create tag: ' + error.message);
-});
-
 const {
   loading: tagsLoading,
   result: tagsResult,
-  refetch: refetchTags,
 } = useQuery(
   GET_TAGS,
   computed(() => ({
@@ -72,26 +62,8 @@ const tagOptions = computed<MultiSelectOption[]>(() => {
   return options;
 });
 
-const handleUpdateTags = async (newTags: string[]) => {
-  // Check if we need to create any new tags
-  const existingTags =
-    tagsResult.value?.tags?.map((tag: Tag) => tag.text) || [];
-  const tagsToCreate = newTags.filter((tag) => !existingTags.includes(tag));
-
-  // Create new tags
-  for (const tagText of tagsToCreate) {
-    try {
-      await createTag({ input: [{ text: tagText }] });
-    } catch (error) {
-      console.error('Error creating tag:', error);
-    }
-  }
-
-  // Refetch tags to update the list
-  if (tagsToCreate.length > 0) {
-    await refetchTags();
-  }
-
+const handleUpdateTags = (newTags: string[]) => {
+  // Just emit the selected tags - parent component will handle creation via connectOrCreate
   emit('setSelectedTags', newTags);
 };
 
@@ -105,7 +77,7 @@ const handleSearch = (query: string) => {
     :model-value="selectedTags"
     :options="tagOptions"
     :description="description"
-    :loading="tagsLoading || createTagLoading"
+    :loading="tagsLoading"
     placeholder="Select tags..."
     search-placeholder="Type to search or create tags..."
     test-id="tag-picker"
