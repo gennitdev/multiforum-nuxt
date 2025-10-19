@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import type { PropType } from 'vue';
 import { useQuery } from '@vue/apollo-composable';
 import { GET_CHANNEL_NAMES } from '@/graphQLData/channel/queries';
@@ -27,18 +27,32 @@ const props = defineProps({
 const emit = defineEmits(['setSelectedChannels']);
 
 const searchQuery = ref('');
+const debouncedSearchQuery = ref('');
+
+// Debounce timer
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+// Watch searchQuery and update debouncedSearchQuery after delay
+watch(searchQuery, (newValue) => {
+  if (debounceTimer) {
+    clearTimeout(debounceTimer);
+  }
+  debounceTimer = setTimeout(() => {
+    debouncedSearchQuery.value = newValue;
+  }, 300); // 300ms debounce
+});
 
 const { loading: channelsLoading, result: channelsResult } = useQuery(
   GET_CHANNEL_NAMES,
   computed(() => ({
     channelWhere: {
-      uniqueName_MATCHES: searchQuery.value
-        ? `(?i).*${searchQuery.value}.*`
+      uniqueName_MATCHES: debouncedSearchQuery.value
+        ? `(?i).*${debouncedSearchQuery.value}.*`
         : '.*',
     },
   })),
   {
-    fetchPolicy: 'cache-first',
+    fetchPolicy: 'cache-and-network',
   }
 );
 
