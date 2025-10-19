@@ -7,7 +7,6 @@ import CalendarIcon from '@/components/icons/CalendarIcon.vue';
 import LocationIcon from '@/components/icons/LocationIcon.vue';
 import DiscussionIcon from '@/components/icons/DiscussionIcon.vue';
 import ChannelIcon from '@/components/icons/ChannelIcon.vue';
-import ListIcon from '@/components/icons/ListIcon.vue';
 import UserIcon from '@/components/icons/UserIcon.vue';
 import SettingsIcon from '@/components/icons/SettingsIcon.vue';
 import AdminIcon from '@/components/icons/AdminIcon.vue';
@@ -24,6 +23,7 @@ import {
 } from '@/utils/localStorageUtils';
 import SiteSidenavLogout from './SiteSidenavLogout.vue';
 import type { ForumItem } from '@/types/forum';
+import BookmarkIcon from '@/components/icons/BookmarkIcon.vue';
 
 const DEFAULT_LIMIT = 5;
 const VERTICAL_NAV_LIMIT = 3;
@@ -63,7 +63,7 @@ const navigation: NavigationItem[] = [
   {
     name: 'Library',
     href: '/library',
-    icon: ListIcon,
+    icon: BookmarkIcon,
     routerName: 'library',
   },
 ];

@@ -5,7 +5,6 @@ import EmojiButtons from '@/components/comments/EmojiButtons.vue';
 import NewEmojiButton from '@/components/comments/NewEmojiButton.vue';
 import RequireAuth from '@/components/auth/RequireAuth.vue';
 import DiscussionTagEditor from '@/components/discussion/DiscussionTagEditor.vue';
-import Tag from '@/components/TagComponent.vue';
 import 'md-editor-v3/lib/preview.css';
 import type { PropType } from 'vue';
 import type { Discussion } from '@/__generated__/graphql';
@@ -71,17 +70,6 @@ const props = defineProps({
 
 const emit = defineEmits(['refetchDiscussion']);
 
-// Tag editor state
-const showTagEditor = ref(false);
-
-const showEditor = () => {
-  showTagEditor.value = true;
-};
-
-const hideTagEditor = () => {
-  showTagEditor.value = false;
-};
-
 // Check if user can edit tags (user must be the discussion author)
 const canEditTags = computed(() => {
   return props.discussion?.Author?.username === usernameVar.value;
@@ -146,6 +134,14 @@ const hasAlbum = computed(() => {
 const hasEmoiji = computed(() => {
   return props.discussionChannelId && props.emojiJson && props.showEmojiButton;
 });
+
+const showTagEditor = ref(false);
+const showEditor = () => {
+  showTagEditor.value = true;
+};
+const hideTagEditor = () => {
+  showTagEditor.value = false;
+};
 </script>
 
 <template>
@@ -203,7 +199,12 @@ const hasEmoiji = computed(() => {
         :emoji-json="emojiJson"
       />
     </div>
-    <div v-if="discussion && ((discussion.Tags && discussion.Tags.length > 0) || canEditTags)">
+    <div
+      v-if="
+        discussion &&
+        ((discussion.Tags && discussion.Tags.length > 0) || canEditTags)
+      "
+    >
       <div class="flex items-center justify-between">
         <button
           v-if="canEditTags && !showTagEditor"
@@ -225,7 +226,9 @@ const hasEmoiji = computed(() => {
           @click="filterByTag(tag.text)"
         />
         <p
-          v-if="(!discussion.Tags || discussion.Tags.length === 0) && canEditTags"
+          v-if="
+            (!discussion.Tags || discussion.Tags.length === 0) && canEditTags
+          "
           class="text-sm text-gray-500 dark:text-gray-400"
         >
           No tags yet. Click "Edit tags" to add tags.
