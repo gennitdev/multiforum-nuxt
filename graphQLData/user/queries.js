@@ -485,6 +485,20 @@ export const GET_USER_CONTRIBUTIONS = gql`
             discussionId
           }
         }
+        Downloads {
+          id
+          title
+          createdAt
+          Author {
+            username
+            profilePicURL
+          }
+          DiscussionChannels {
+            id
+            channelUniqueName
+            discussionId
+          }
+        }
         Events {
           id
           title

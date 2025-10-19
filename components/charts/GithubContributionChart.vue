@@ -516,11 +516,27 @@ const cellCount = computed(() => {
                       : 'discussions '
                   }}
                 </template>
-                <template v-if="activity.Events && activity.Events.length > 0">
+                <template
+                  v-if="activity.Downloads && activity.Downloads.length > 0"
+                >
                   <template
                     v-if="
                       (activity.Comments && activity.Comments.length > 0) ||
                       (activity.Discussions && activity.Discussions.length > 0)
+                    "
+                    >•</template
+                  >
+                  {{ activity.Downloads.length }}
+                  {{
+                    activity.Downloads.length === 1 ? 'download ' : 'downloads '
+                  }}
+                </template>
+                <template v-if="activity.Events && activity.Events.length > 0">
+                  <template
+                    v-if="
+                      (activity.Comments && activity.Comments.length > 0) ||
+                      (activity.Discussions && activity.Discussions.length > 0) ||
+                      (activity.Downloads && activity.Downloads.length > 0)
                     "
                     >•</template
                   >
@@ -608,6 +624,24 @@ const cellCount = computed(() => {
                     :key="discussion.id"
                     class="mb-1 flex-col gap-2"
                     :discussion="discussion"
+                  />
+                </div>
+
+                <!-- Downloads Section -->
+                <div
+                  v-if="activity.Downloads && activity.Downloads.length > 0"
+                  class="py-2"
+                >
+                  <h4
+                    class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    Downloads
+                  </h4>
+                  <DiscussionItemInProfile
+                    v-for="download in activity.Downloads"
+                    :key="download.id"
+                    class="mb-1 flex-col gap-2"
+                    :discussion="download"
                   />
                 </div>
 
