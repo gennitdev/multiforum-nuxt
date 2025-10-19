@@ -46,7 +46,9 @@ const channelOptions = computed<MultiSelectOption[]>(() => {
   const channels = channelsResult.value?.channels || [];
   const mappedChannels = channels.map((channel: Channel) => ({
     value: channel.uniqueName,
-    label: channel.displayName || channel.uniqueName,
+    label: channel.displayName
+      ? `${channel.uniqueName} (${channel.displayName})`
+      : channel.uniqueName,
     avatar: channel.channelIconURL || '',
   }));
 
