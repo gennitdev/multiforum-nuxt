@@ -12,6 +12,7 @@ import { useRouter } from 'nuxt/app';
 import { useQuery } from '@vue/apollo-composable';
 import { GET_USER } from '@/graphQLData/user/queries';
 import { usernameVar, isAuthenticatedVar } from '@/cache';
+import TagComponent from '@/components/TagComponent.vue';
 
 const router = useRouter();
 
@@ -218,7 +219,7 @@ const hideTagEditor = () => {
 
       <!-- View Mode -->
       <div v-if="!showTagEditor" class="mt-2 flex flex-wrap gap-2">
-        <Tag
+        <TagComponent
           v-for="tag in discussion.Tags"
           :key="tag.text"
           class="mb-1"
