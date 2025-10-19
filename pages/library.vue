@@ -197,7 +197,7 @@ const filteredCollections = computed(() => {
                     <h2
                       class="font-semibold text-xl text-gray-900 dark:text-white"
                     >
-                      Your Collections
+                      Your Lists
                     </h2>
                   </div>
 

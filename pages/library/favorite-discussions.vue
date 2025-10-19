@@ -211,7 +211,7 @@ const getAuthorInfo = (discussion: any) => {
                 class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
               >
                 <!-- Discussion header -->
-                <div class="mb-4">
+                <div class="mb-1">
                   <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-2">
                       <!-- Channel info -->
@@ -253,10 +253,10 @@ const getAuthorInfo = (discussion: any) => {
                 </div>
 
                 <!-- Discussion title -->
-                <div class="mb-3 flex items-center justify-between">
+                <div class="mb-1 flex items-center justify-between">
                   <NuxtLink
                     :to="getDiscussionLink(discussion)"
-                    class="font-semibold min-w-0 flex-1 text-lg text-gray-900 hover:text-orange-600 dark:text-white dark:hover:text-orange-400"
+                    class="font-semibold min-w-0 flex-1 text-sm text-gray-900 hover:text-orange-600 dark:text-white dark:hover:text-orange-400"
                   >
                     {{ discussion.title }}
                   </NuxtLink>
