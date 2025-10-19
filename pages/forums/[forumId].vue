@@ -136,6 +136,19 @@ const handleRefetchChannelData = () => {
   refetchChannel();
 };
 
+const currentTab = computed(() => {
+  const routeName = String(route.name);
+  if (routeName.includes('discussions')) return 'Discussions';
+  if (routeName.includes('downloads')) return 'Downloads';
+  if (routeName.includes('events')) return 'Events';
+  if (routeName.includes('issues')) return 'Issues';
+  if (routeName.includes('wiki')) return 'Wiki';
+  if (routeName.includes('about')) return 'About';
+  if (routeName.includes('contributors')) return 'Contributors';
+  if (routeName.includes('edit')) return 'Settings';
+  return '';
+});
+
 const addForumToLocalStorage = (channel: Channel) => {
   if (!import.meta.client) {
     return;
@@ -184,13 +197,19 @@ onGetChannelResult((result) => {
       (loadedChannel.description.length > 160 ? '...' : '')
     : `${forumName} - Community Forum`;
   const baseUrl = import.meta.env.VITE_BASE_URL;
-  const serverName = import.meta.env.VITE_SERVER_DISPLAY_NAME;
+  const serverName = import.meta.env.VITE_SERVER_DISPLAY_NAME || 'Multiforum';
   const imageUrl =
     loadedChannel.channelIconURL || loadedChannel.channelBannerURL || '';
 
+  // Build the page title with the current tab
+  const tabName = currentTab.value;
+  const pageTitle = tabName
+    ? `${forumName} | ${tabName}`
+    : `${forumName} | ${serverName}`;
+
   // Set basic SEO meta tags
   useHead({
-    title: `${forumName} | ${serverName}`,
+    title: pageTitle,
     description: forumDescription,
     image: imageUrl,
     type: 'website',
