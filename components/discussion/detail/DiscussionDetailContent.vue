@@ -370,12 +370,12 @@ const handleEditAlbum = () => {
               />
             </DiscussionCommentsWrapper>
           </div>
-          <DiscussionChannelLinks
-            v-if="discussion && (discussion as Discussion).DiscussionChannels"
-            :channel-id="activeDiscussionChannel?.channelUniqueName || ''"
-            :discussion-channels="(discussion as Discussion).DiscussionChannels"
-          />
         </div>
+        <DiscussionChannelLinks
+          v-if="discussion && (discussion as Discussion).DiscussionChannels"
+          :channel-id="activeDiscussionChannel?.channelUniqueName || ''"
+          :discussion-channels="(discussion as Discussion).DiscussionChannels"
+        />
       </div>
     </div>
     <FeedbackModalManager
