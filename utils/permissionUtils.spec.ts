@@ -7,12 +7,38 @@ import type {
 
 describe('permissionUtils', () => {
   describe('checkPermission', () => {
-    // Sample test data
-    const standardModRole = {
+    // Sample test data for user roles
+    const defaultChannelRole = {
+      canCreateComment: true,
+      canCreateDiscussion: true,
+      canCreateEvent: true,
+      canUpdateChannel: false,
+      canUploadFile: true,
+      canUpvoteComment: true,
+      canUpvoteDiscussion: true,
+    };
+
+    const adminChannelRole = {
+      canCreateComment: true,
+      canCreateDiscussion: true,
+      canCreateEvent: true,
+      canUpdateChannel: true,
+      canUploadFile: true,
+      canUpvoteComment: true,
+      canUpvoteDiscussion: true,
+    };
+
+    // Sample test data for mod roles
+    const defaultModRole = {
       canReport: true,
       canGiveFeedback: true,
       canHideComment: false,
+      canHideDiscussion: false,
+      canHideEvent: false,
+      canSuspendUser: false,
       canOpenSupportTickets: true,
+      canCloseSupportTickets: false,
+      canLockChannel: false,
     };
 
     const elevatedModRole = {
@@ -21,18 +47,27 @@ describe('permissionUtils', () => {
       canHideComment: true,
       canHideDiscussion: true,
       canHideEvent: true,
-      canSuspendUser: false,
+      canSuspendUser: true,
       canOpenSupportTickets: true,
       canCloseSupportTickets: true,
+      canLockChannel: true,
     };
 
-    it('should return fall back to server permissions if permissionData from channel is null', () => {
+    it('should fall back to default role if no assigned role exists', () => {
       const params: CheckPermissionParams = {
         permissionData: null,
-        standardModRole,
-        elevatedModRole,
         username: 'user1',
         modProfileName: 'mod1',
+        isSuspendedAsUser: false,
+        isSuspendedAsMod: false,
+        userRoles: {
+          assignedChannelRole: null,
+          defaultChannelRole,
+        },
+        modRoles: {
+          assignedModChannelRole: null,
+          defaultModRole,
+        },
         action: 'canReport',
       };
 
@@ -45,94 +80,121 @@ describe('permissionUtils', () => {
           Admins: [{ username: 'admin1' }],
           Moderators: [{ displayName: 'mod2' }],
         },
-        standardModRole: null,
-        elevatedModRole: null,
         username: 'user1',
         modProfileName: 'mod1',
+        isSuspendedAsUser: false,
+        isSuspendedAsMod: false,
+        userRoles: {
+          assignedChannelRole: null,
+          defaultChannelRole: null,
+        },
+        modRoles: {
+          assignedModChannelRole: null,
+          defaultModRole: null,
+        },
         action: 'canReport',
       };
 
       expect(checkPermission(params)).toBe(false);
     });
 
-    it('should return true if user is a channel owner (admin)', () => {
-      const params: CheckPermissionParams = {
-        permissionData: {
-          Admins: [{ username: 'admin1' }, { username: 'user1' }],
-          Moderators: [{ displayName: 'mod2' }],
-        },
-        standardModRole,
-        elevatedModRole,
-        username: 'user1',
-        modProfileName: 'mod1',
-        action: 'canSuspendUser', // Even for actions that would normally be false
-      };
-
-      expect(checkPermission(params)).toBe(true);
-    });
-
-    it('should return false if user is a suspended mod', () => {
+    it('should return false if user is suspended (user permissions)', () => {
       const params: CheckPermissionParams = {
         permissionData: {
           Admins: [{ username: 'admin1' }],
           Moderators: [{ displayName: 'mod2' }],
-          SuspendedMods: [{ modProfileName: 'mod1' }],
         },
-        standardModRole,
-        elevatedModRole,
         username: 'user1',
         modProfileName: 'mod1',
-        action: 'canReport', // Even for actions that would normally be true
+        isSuspendedAsUser: true,
+        isSuspendedAsMod: false,
+        userRoles: {
+          assignedChannelRole: null,
+          defaultChannelRole,
+        },
+        modRoles: {
+          assignedModChannelRole: null,
+          defaultModRole,
+        },
+        action: 'canCreateDiscussion',
       };
 
       expect(checkPermission(params)).toBe(false);
     });
 
-    it('should check elevated mod role permissions for elevated mods', () => {
-      const permissionData = {
-        Admins: [{ username: 'admin1' }],
-        Moderators: [{ displayName: 'mod1' }], // User is an elevated mod
+    it('should return false if mod is suspended (mod permissions)', () => {
+      const params: CheckPermissionParams = {
+        permissionData: {
+          Admins: [{ username: 'admin1' }],
+          Moderators: [{ displayName: 'mod2' }],
+        },
+        username: 'user1',
+        modProfileName: 'mod1',
+        isSuspendedAsUser: false,
+        isSuspendedAsMod: true,
+        userRoles: {
+          assignedChannelRole: null,
+          defaultChannelRole,
+        },
+        modRoles: {
+          assignedModChannelRole: null,
+          defaultModRole,
+        },
+        action: 'canReport',
       };
 
-      // Permission that elevated mods have
+      expect(checkPermission(params)).toBe(false);
+    });
+
+    it('should use assigned mod role over default mod role', () => {
+      const permissionData = {
+        Admins: [{ username: 'admin1' }],
+        Moderators: [{ displayName: 'mod1' }],
+      };
+
+      // Permission that elevated mods have but standard mods don't
       expect(
         checkPermission({
           permissionData,
-          standardModRole,
-          elevatedModRole,
           username: 'user1',
           modProfileName: 'mod1',
+          isSuspendedAsUser: false,
+          isSuspendedAsMod: false,
+          userRoles: {
+            assignedChannelRole: null,
+            defaultChannelRole,
+          },
+          modRoles: {
+            assignedModChannelRole: elevatedModRole,
+            defaultModRole,
+          },
           action: 'canHideComment',
         })
       ).toBe(true);
-
-      // Permission that elevated mods don't have
-      expect(
-        checkPermission({
-          permissionData,
-          standardModRole,
-          elevatedModRole,
-          username: 'user1',
-          modProfileName: 'mod1',
-          action: 'canSuspendUser',
-        })
-      ).toBe(false);
     });
 
-    it('should check standard mod role permissions for standard users', () => {
+    it('should use default mod role if no assigned role', () => {
       const permissionData = {
         Admins: [{ username: 'admin1' }],
-        Moderators: [{ displayName: 'mod2' }], // User is not an elevated mod
+        Moderators: [{ displayName: 'mod2' }],
       };
 
       // Permission that standard mods have
       expect(
         checkPermission({
           permissionData,
-          standardModRole,
-          elevatedModRole,
           username: 'user1',
           modProfileName: 'mod1',
+          isSuspendedAsUser: false,
+          isSuspendedAsMod: false,
+          userRoles: {
+            assignedChannelRole: null,
+            defaultChannelRole,
+          },
+          modRoles: {
+            assignedModChannelRole: null,
+            defaultModRole,
+          },
           action: 'canReport',
         })
       ).toBe(true);
@@ -141,11 +203,66 @@ describe('permissionUtils', () => {
       expect(
         checkPermission({
           permissionData,
-          standardModRole,
-          elevatedModRole,
           username: 'user1',
           modProfileName: 'mod1',
+          isSuspendedAsUser: false,
+          isSuspendedAsMod: false,
+          userRoles: {
+            assignedChannelRole: null,
+            defaultChannelRole,
+          },
+          modRoles: {
+            assignedModChannelRole: null,
+            defaultModRole,
+          },
           action: 'canHideComment',
+        })
+      ).toBe(false);
+    });
+
+    it('should use assigned user role over default user role', () => {
+      const permissionData = {
+        Admins: [{ username: 'admin1' }],
+        Moderators: [],
+      };
+
+      // User with assigned admin role can update channel
+      expect(
+        checkPermission({
+          permissionData,
+          username: 'user1',
+          modProfileName: 'mod1',
+          isSuspendedAsUser: false,
+          isSuspendedAsMod: false,
+          userRoles: {
+            assignedChannelRole: adminChannelRole,
+            defaultChannelRole,
+          },
+          modRoles: {
+            assignedModChannelRole: null,
+            defaultModRole,
+          },
+          action: 'canUpdateChannel',
+        })
+      ).toBe(true);
+
+      // User with default role cannot update channel
+      expect(
+        checkPermission({
+          permissionData,
+          username: 'user2',
+          modProfileName: 'mod1',
+          isSuspendedAsUser: false,
+          isSuspendedAsMod: false,
+          userRoles: {
+            assignedChannelRole: null,
+            defaultChannelRole,
+          },
+          modRoles: {
+            assignedModChannelRole: null,
+            defaultModRole,
+          },
+          action: 'canUpdateChannel',
         })
       ).toBe(false);
     });
@@ -159,21 +276,55 @@ describe('permissionUtils', () => {
       expect(
         checkPermission({
           permissionData,
-          standardModRole,
-          elevatedModRole,
           username: 'user1',
           modProfileName: 'mod1',
-          action: 'nonExistentPermission', // Permission not in any role
+          isSuspendedAsUser: false,
+          isSuspendedAsMod: false,
+          userRoles: {
+            assignedChannelRole: null,
+            defaultChannelRole,
+          },
+          modRoles: {
+            assignedModChannelRole: null,
+            defaultModRole,
+          },
+          action: 'nonExistentPermission',
         })
       ).toBe(false);
     });
   });
 
   describe('getAllPermissions', () => {
-    const standardModRole = {
+    const defaultChannelRole = {
+      canCreateComment: true,
+      canCreateDiscussion: true,
+      canCreateEvent: true,
+      canUpdateChannel: false,
+      canUploadFile: true,
+      canUpvoteComment: true,
+      canUpvoteDiscussion: true,
+    };
+
+    const adminChannelRole = {
+      canCreateComment: true,
+      canCreateDiscussion: true,
+      canCreateEvent: true,
+      canUpdateChannel: true,
+      canUploadFile: true,
+      canUpvoteComment: true,
+      canUpvoteDiscussion: true,
+    };
+
+    const defaultModRole = {
       canReport: true,
       canGiveFeedback: true,
       canHideComment: false,
+      canHideDiscussion: false,
+      canHideEvent: false,
+      canSuspendUser: false,
+      canOpenSupportTickets: true,
+      canCloseSupportTickets: false,
+      canLockChannel: false,
     };
 
     const elevatedModRole = {
@@ -181,29 +332,43 @@ describe('permissionUtils', () => {
       canGiveFeedback: true,
       canHideComment: true,
       canHideDiscussion: true,
-      canSuspendUser: false,
+      canHideEvent: true,
+      canSuspendUser: true,
+      canOpenSupportTickets: true,
+      canCloseSupportTickets: true,
+      canLockChannel: true,
     };
 
-    it('should return all permissions for a channel owner', () => {
+    it('should return all permissions for a channel owner with assigned role', () => {
       const params: GetAllPermissionsParams = {
         permissionData: {
-          Admins: [{ username: 'user1' }], // User is an admin
+          Admins: [{ username: 'user1' }],
           Moderators: [],
-          SuspendedMods: [],
-          SuspendedUsers: [],
         },
-        standardModRole,
-        elevatedModRole,
         username: 'user1',
         modProfileName: 'mod1',
+        isSuspendedAsUser: false,
+        isSuspendedAsMod: false,
+        userRoles: {
+          assignedChannelRole: adminChannelRole,
+          defaultChannelRole,
+        },
+        modRoles: {
+          assignedModChannelRole: elevatedModRole,
+          defaultModRole,
+        },
       };
 
       const permissions = getAllPermissions(params);
 
-      // Channel owners have all permissions
+      // Should have admin channel permissions
+      expect(permissions.canUpdateChannel).toBe(true);
+      expect(permissions.canCreateDiscussion).toBe(true);
+      // Should have elevated mod permissions
       expect(permissions.canReport).toBe(true);
       expect(permissions.canHideComment).toBe(true);
-      expect(permissions.canSuspendUser).toBe(true); // Even ones explicitly false for elevated mods
+      expect(permissions.canSuspendUser).toBe(true);
+      // Metadata
       expect(permissions.isChannelOwner).toBe(true);
       expect(permissions.isElevatedMod).toBe(false);
       expect(permissions.isSuspendedMod).toBe(false);
@@ -214,23 +379,33 @@ describe('permissionUtils', () => {
       const params: GetAllPermissionsParams = {
         permissionData: {
           Admins: [{ username: 'admin1' }],
-          Moderators: [{ displayName: 'mod1' }], // User is an elevated mod
-          SuspendedMods: [],
-          SuspendedUsers: [],
+          Moderators: [{ displayName: 'mod1' }],
         },
-        standardModRole,
-        elevatedModRole,
         username: 'user1',
         modProfileName: 'mod1',
+        isSuspendedAsUser: false,
+        isSuspendedAsMod: false,
+        userRoles: {
+          assignedChannelRole: null,
+          defaultChannelRole,
+        },
+        modRoles: {
+          assignedModChannelRole: elevatedModRole,
+          defaultModRole,
+        },
       };
 
       const permissions = getAllPermissions(params);
 
+      // Should have user permissions
+      expect(permissions.canCreateDiscussion).toBe(true);
+      expect(permissions.canUpdateChannel).toBe(false);
       // Should have elevated mod permissions
       expect(permissions.canReport).toBe(true);
       expect(permissions.canHideComment).toBe(true);
       expect(permissions.canHideDiscussion).toBe(true);
-      expect(permissions.canSuspendUser).toBe(false); // Explicitly false in role
+      expect(permissions.canSuspendUser).toBe(true);
+      // Metadata
       expect(permissions.isChannelOwner).toBe(false);
       expect(permissions.isElevatedMod).toBe(true);
       expect(permissions.isSuspendedMod).toBe(false);
@@ -241,22 +416,32 @@ describe('permissionUtils', () => {
       const params: GetAllPermissionsParams = {
         permissionData: {
           Admins: [{ username: 'admin1' }],
-          Moderators: [{ displayName: 'mod2' }], // User is not an elevated mod
-          SuspendedMods: [],
-          SuspendedUsers: [],
+          Moderators: [{ displayName: 'mod2' }],
         },
-        standardModRole,
-        elevatedModRole,
         username: 'user1',
         modProfileName: 'mod1',
+        isSuspendedAsUser: false,
+        isSuspendedAsMod: false,
+        userRoles: {
+          assignedChannelRole: null,
+          defaultChannelRole,
+        },
+        modRoles: {
+          assignedModChannelRole: null,
+          defaultModRole,
+        },
       };
 
       const permissions = getAllPermissions(params);
 
-      // Should have standard permissions
+      // Should have standard user permissions
+      expect(permissions.canCreateDiscussion).toBe(true);
+      expect(permissions.canUpdateChannel).toBe(false);
+      // Should have standard mod permissions
       expect(permissions.canReport).toBe(true);
       expect(permissions.canGiveFeedback).toBe(true);
-      expect(permissions.canHideComment).toBe(false); // Explicitly false in standard role
+      expect(permissions.canHideComment).toBe(false);
+      // Metadata
       expect(permissions.isChannelOwner).toBe(false);
       expect(permissions.isElevatedMod).toBe(false);
       expect(permissions.isSuspendedMod).toBe(false);
@@ -268,20 +453,29 @@ describe('permissionUtils', () => {
         permissionData: {
           Admins: [{ username: 'admin1' }],
           Moderators: [{ displayName: 'mod2' }],
-          SuspendedMods: [{ modProfileName: 'mod1' }], // User is suspended
-          SuspendedUsers: [],
         },
-        standardModRole,
-        elevatedModRole,
         username: 'user1',
         modProfileName: 'mod1',
+        isSuspendedAsUser: false,
+        isSuspendedAsMod: true,
+        userRoles: {
+          assignedChannelRole: null,
+          defaultChannelRole,
+        },
+        modRoles: {
+          assignedModChannelRole: null,
+          defaultModRole,
+        },
       };
 
       const permissions = getAllPermissions(params);
 
-      // Suspended mods have no permissions
+      // Suspended mods have no mod permissions
       expect(permissions.canReport).toBe(false);
       expect(permissions.canHideComment).toBe(false);
+      // But still have user permissions
+      expect(permissions.canCreateDiscussion).toBe(true);
+      // Metadata
       expect(permissions.isChannelOwner).toBe(false);
       expect(permissions.isElevatedMod).toBe(false);
       expect(permissions.isSuspendedMod).toBe(true);
@@ -293,19 +487,31 @@ describe('permissionUtils', () => {
         permissionData: {
           Admins: [{ username: 'admin1' }],
           Moderators: [{ displayName: 'mod2' }],
-          SuspendedMods: [],
-          SuspendedUsers: [{ username: 'user1' }], // User is suspended
         },
-        standardModRole,
-        elevatedModRole,
         username: 'user1',
         modProfileName: 'mod1',
+        isSuspendedAsUser: true,
+        isSuspendedAsMod: false,
+        userRoles: {
+          assignedChannelRole: null,
+          defaultChannelRole,
+        },
+        modRoles: {
+          assignedModChannelRole: null,
+          defaultModRole,
+        },
       };
 
       const permissions = getAllPermissions(params);
 
-      // Should still have proper permission flags
+      // Suspended users have no user permissions
+      expect(permissions.canCreateDiscussion).toBe(false);
+      expect(permissions.canUpdateChannel).toBe(false);
+      // But still have mod permissions
+      expect(permissions.canReport).toBe(true);
+      // Metadata
       expect(permissions.isSuspendedUser).toBe(true);
+      expect(permissions.isSuspendedMod).toBe(false);
     });
   });
 });

@@ -128,6 +128,16 @@ export const GET_CHANNEL = gql`
           }
         }
       }
+      PinnedDiscussionChannels {
+        id
+        discussionId
+        channelUniqueName
+      }
+      PinnedWikiPages {
+        id
+        title
+        slug
+      }
       Tags {
         text
       }

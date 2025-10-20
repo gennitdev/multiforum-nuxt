@@ -16,6 +16,7 @@ import UserMinus from '@/components/icons/UserMinus.vue';
 import type { Event, Tag as TagData } from '@/__generated__/graphql';
 import ImageIcon from '@/components/icons/ImageIcon.vue';
 import CheckCircle from '@/components/icons/CheckCircle.vue';
+import PinIcon from '@/components/icons/PinIcon.vue';
 
 const MAX_FILE_SIZE_MB = 5;
 const MAX_PROFILE_PIC_SIZE_MB = 1;
@@ -507,6 +508,7 @@ const ALLOWED_ICONS = {
   ADD_ALBUM: 'ADD_ALBUM',
   MARK_BEST_ANSWER: 'MARK_BEST_ANSWER',
   MARK_SENSITIVE: 'MARK_SENSITIVE',
+  PIN: 'PIN',
 };
 
 const actionIconMap = {
@@ -525,6 +527,7 @@ const actionIconMap = {
   [ALLOWED_ICONS.ADD_ALBUM]: ImageIcon,
   [ALLOWED_ICONS.MARK_BEST_ANSWER]: CheckCircle,
   [ALLOWED_ICONS.MARK_SENSITIVE]: EyeIcon,
+  [ALLOWED_ICONS.PIN]: PinIcon,
 };
 
 export {

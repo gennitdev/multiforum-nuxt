@@ -58,6 +58,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  isPinned: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 defineEmits(['filterByTag']);
@@ -215,6 +219,12 @@ const revealSensitiveContent = () => {
                   class="rounded-full border border-orange-600 px-2 text-xs text-orange-600 dark:border-orange-400 dark:text-orange-400"
                 >
                   Sensitive
+                </span>
+                <span
+                  v-if="isPinned"
+                  class="rounded bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+                >
+                  Pinned
                 </span>
               </nuxt-link>
               <div

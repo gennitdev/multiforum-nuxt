@@ -1,4 +1,4 @@
-/* eslint-disable */
+ 
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -30,6 +30,7 @@ export type Activity = {
   __typename?: 'Activity';
   Comments: Array<CommentInfo>;
   Discussions: Array<DiscussionInfo>;
+  Downloads: Array<DiscussionInfo>;
   Events: Array<EventInfo>;
   description: Scalars['String']['output'];
   id: Scalars['String']['output'];

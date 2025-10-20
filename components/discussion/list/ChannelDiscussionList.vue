@@ -9,6 +9,7 @@ import LoadMore from '../../LoadMore.vue';
 import ErrorBanner from '../../ErrorBanner.vue';
 import RequireAuth from '@/components/auth/RequireAuth.vue';
 import { GET_DISCUSSIONS_WITH_DISCUSSION_CHANNEL_DATA } from '@/graphQLData/discussion/queries';
+import { GET_CHANNEL } from '@/graphQLData/channel/queries';
 import { usernameVar } from '@/cache';
 import { getFilterValuesFromParams } from '@/components/event/list/filters/getEventFilterValuesFromParams';
 import {
@@ -161,6 +162,21 @@ const reachedEndOfResults = computed(() => {
       .length
   );
 });
+
+// Get pinned items from the channel
+const { result: channelResult } = useQuery(
+  GET_CHANNEL,
+  { uniqueName: channelId },
+  { fetchPolicy: 'cache-first' }
+);
+
+const pinnedDiscussionChannels = computed(() => {
+  return channelResult.value?.channels[0]?.PinnedDiscussionChannels || [];
+});
+
+const pinnedWikiPages = computed(() => {
+  return channelResult.value?.channels[0]?.PinnedWikiPages || [];
+});
 </script>
 
 <template>
@@ -212,11 +228,58 @@ const reachedEndOfResults = computed(() => {
     <ul
       v-else-if="
         discussionChannelResult?.getDiscussionsInChannel?.discussionChannels
-          ?.length > 0
+          ?.length > 0 ||
+        pinnedDiscussionChannels.length > 0 ||
+        pinnedWikiPages.length > 0
       "
       class="flex flex-col divide-y divide-gray-200 dark:divide-gray-700"
       data-testid="channel-discussion-list"
     >
+      <!-- Pinned Wiki Pages -->
+      <li
+        v-for="wikiPage in pinnedWikiPages"
+        :key="`pinned-wiki-${wikiPage.id}`"
+        class="group relative flex items-start gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800"
+      >
+        <div class="flex-1">
+          <div class="flex items-center gap-2">
+            <nuxt-link
+              :to="`/forums/${channelId}/wiki/${wikiPage.slug}`"
+              class="text-lg font-semibold text-gray-900 hover:text-orange-600 dark:text-white dark:hover:text-orange-400"
+            >
+              {{ wikiPage.title }}
+            </nuxt-link>
+            <span
+              class="rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+            >
+              Wiki Page
+            </span>
+            <span
+              class="rounded bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+            >
+              Pinned
+            </span>
+          </div>
+        </div>
+      </li>
+
+      <!-- Pinned Discussions -->
+      <ChannelDiscussionListItem
+        v-for="discussionChannel in pinnedDiscussionChannels"
+        :key="`pinned-discussion-${discussionChannel.id}`"
+        :discussion="discussionChannel.Discussion"
+        :discussion-channel="discussionChannel"
+        :search-input="searchInput"
+        :selected-tags="selectedTags"
+        :selected-channels="selectedChannels"
+        :default-expanded="expandChannelDiscussions"
+        :is-pinned="true"
+        @open-mod-profile="showModProfileModal = true"
+        @filter-by-tag="filterByTag"
+        @filter-by-channel="filterByChannel"
+      />
+
+      <!-- Regular Discussions -->
       <ChannelDiscussionListItem
         v-for="discussionChannel in discussionChannelResult
           .getDiscussionsInChannel.discussionChannels"

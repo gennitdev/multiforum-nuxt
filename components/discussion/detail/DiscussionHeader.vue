@@ -1,29 +1,25 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue';
-import { useMutation, useQuery } from '@vue/apollo-composable';
+import { useMutation } from '@vue/apollo-composable';
 import { useRoute, useRouter } from 'nuxt/app';
-import { DateTime } from 'luxon';
 import { stableRelativeTime } from '@/utils';
 import {
   DELETE_DISCUSSION,
   UPDATE_DISCUSSION_SENSITIVE_CONTENT,
 } from '@/graphQLData/discussion/mutations';
+import { UPDATE_CHANNEL } from '@/graphQLData/channel/mutations';
 import WarningModal from '@/components/WarningModal.vue';
 import ErrorBanner from '@/components/ErrorBanner.vue';
 import Notification from '@/components/NotificationComponent.vue';
 import BrokenRulesModal from '@/components/mod/BrokenRulesModal.vue';
 import EllipsisHorizontal from '@/components/icons/EllipsisHorizontal.vue';
-import { getAllPermissions } from '@/utils/permissionUtils';
 import { getDiscussionHeaderMenuItems } from '@/utils/headerPermissionUtils';
-import { usernameVar, modProfileNameVar } from '@/cache';
+import { usernameVar } from '@/cache';
 import AddToDiscussionFavorites from '@/components/favorites/AddToDiscussionFavorites.vue';
 import UnarchiveModal from '@/components/mod/UnarchiveModal.vue';
-import { GET_CHANNEL } from '@/graphQLData/channel/queries';
-import { USER_IS_MOD_OR_OWNER_IN_CHANNEL } from '@/graphQLData/user/queries';
-import { GET_SERVER_CONFIG } from '@/graphQLData/admin/queries';
-import { config } from '@/config';
+import { useChannelPermissions } from '@/composables/useChannelPermissions';
 import EditsDropdown from './activityFeed/EditsDropdown.vue';
-import type { Discussion } from '@/__generated__/graphql';
+import type { Discussion, DiscussionChannel } from '@/__generated__/graphql';
 
 const props = defineProps<{
   discussion: Discussion | null;
@@ -123,95 +119,9 @@ const defaultChannel = computed(() => {
   );
 });
 
-// Query the channel data to get roles
-const { result: getChannelResult } = useQuery(
-  GET_CHANNEL,
-  {
-    uniqueName: props.channelId || defaultChannel.value,
-    // Using luxon, round down to the nearest hour
-    now: DateTime.local().startOf('hour').toISO(),
-  },
-  {
-    fetchPolicy: 'cache-first',
-    nextFetchPolicy: 'cache-first',
-    enabled: computed(() => !!props.channelId || !!defaultChannel.value),
-  }
-);
-
-// Query server config to get default roles
-const { result: getServerResult } = useQuery(
-  GET_SERVER_CONFIG,
-  {
-    serverName: config.serverName,
-  },
-  {
-    fetchPolicy: 'cache-first',
-  }
-);
-
-// Get the standard and elevated mod roles from the channel or server default
-const standardModRole = computed(() => {
-  // If the channel has a Default Mod Role, return that
-  if (getChannelResult.value?.channels[0]?.DefaultModRole) {
-    return getChannelResult.value?.channels[0]?.DefaultModRole;
-  }
-  // Otherwise, return the default mod role from the server config
-  if (getServerResult.value?.serverConfigs[0]?.DefaultModRole) {
-    return getServerResult.value?.serverConfigs[0]?.DefaultModRole;
-  }
-  return null;
-});
-
-const elevatedModRole = computed(() => {
-  // If the channel has a Default Elevated Mod Role, return that
-  if (getChannelResult.value?.channels[0]?.ElevatedModRole) {
-    return getChannelResult.value?.channels[0]?.ElevatedModRole;
-  }
-  // Otherwise, return the default elevated mod role from server config
-  if (getServerResult.value?.serverConfigs[0]?.DefaultElevatedModRole) {
-    return getServerResult.value?.serverConfigs[0]?.DefaultElevatedModRole;
-  }
-  return null;
-});
-
-// Query user's permissions in the channel
-const { result: getPermissionResult } = useQuery(
-  USER_IS_MOD_OR_OWNER_IN_CHANNEL,
-  {
-    modDisplayName: modProfileNameVar,
-    username: usernameVar,
-    channelUniqueName: props.channelId || defaultChannel.value || '',
-  },
-  {
-    // enable if the username and modDisplayName are set
-    enabled: computed(
-      () =>
-        !!usernameVar.value &&
-        !!modProfileNameVar.value &&
-        !!props.channelId &&
-        !!defaultChannel.value
-    ),
-    fetchPolicy: 'cache-first',
-  }
-);
-
-// Get permission data from the query result
-const permissionData = computed(() => {
-  if (getPermissionResult.value?.channels?.[0]) {
-    return getPermissionResult.value.channels[0];
-  }
-  return null;
-});
-
-// Get all permissions for the current user using our utility function
-const userPermissions = computed(() => {
-  return getAllPermissions({
-    permissionData: permissionData.value,
-    standardModRole: standardModRole.value,
-    elevatedModRole: elevatedModRole.value,
-    username: usernameVar.value,
-    modProfileName: modProfileNameVar.value,
-  });
+// Use composable for permission checking
+const { userPermissions, channel } = useChannelPermissions({
+  channelId: computed(() => (props.channelId || defaultChannel.value) as string),
 });
 
 const permalinkObject = computed(() => {
@@ -257,6 +167,20 @@ const showSuccessfullyArchived = ref(false);
 const showSuccessfullyUnarchived = ref(false);
 const showSuccessfullyArchivedAndSuspended = ref(false);
 const showSuccessfullyUpdatedSensitiveContent = ref(false);
+const showSuccessfullyPinned = ref(false);
+const showSuccessfullyUnpinned = ref(false);
+
+// Check if the discussion is pinned in the current channel
+const isPinned = computed(() => {
+  if (!props.discussionChannelId || !channel.value) {
+    return false;
+  }
+  const pinnedDiscussionChannels =
+    channel.value.PinnedDiscussionChannels || [];
+  return pinnedDiscussionChannels.some(
+    (dc: DiscussionChannel) => dc.id === props.discussionChannelId
+  );
+});
 
 const menuItems = computed(() => {
   if (!props.discussion) {
@@ -271,9 +195,9 @@ const menuItems = computed(() => {
     isLoggedIn: !!usernameVar.value,
     discussionId: props.discussion.id,
     hasAlbum: !!props.discussion?.Album?.Images?.length,
-    feedbackEnabled:
-      getChannelResult.value?.channels[0]?.feedbackEnabled ?? true,
+    feedbackEnabled: channel.value?.feedbackEnabled ?? true,
     hasSensitiveContent: !!props.discussion?.hasSensitiveContent,
+    isPinned: isPinned.value,
   });
 });
 
@@ -299,6 +223,57 @@ const warningModalBody = computed(() => {
 
   return 'This action will permanently delete the discussion.';
 });
+
+// Pin/Unpin handlers
+const {
+  mutate: updateChannel,
+  error: updateChannelError,
+  onDone: onUpdateChannelDone,
+} = useMutation(UPDATE_CHANNEL);
+
+onUpdateChannelDone(() => {
+  if (isPinned.value) {
+    showSuccessfullyUnpinned.value = true;
+    setTimeout(() => {
+      showSuccessfullyUnpinned.value = false;
+    }, 3000);
+  } else {
+    showSuccessfullyPinned.value = true;
+    setTimeout(() => {
+      showSuccessfullyPinned.value = false;
+    }, 3000);
+  }
+});
+
+const handlePin = () => {
+  if (!props.discussionChannelId || !props.channelId) return;
+
+  updateChannel({
+    where: { uniqueName: props.channelId || defaultChannel.value },
+    update: {
+      PinnedDiscussionChannels: [
+        {
+          connect: [{ where: { node: { id: props.discussionChannelId } } }],
+        },
+      ],
+    },
+  });
+};
+
+const handleUnpin = () => {
+  if (!props.discussionChannelId || !props.channelId) return;
+
+  updateChannel({
+    where: { uniqueName: props.channelId || defaultChannel.value },
+    update: {
+      PinnedDiscussionChannels: [
+        {
+          disconnect: [{ where: { node: { id: props.discussionChannelId } } }],
+        },
+      ],
+    },
+  });
+};
 </script>
 
 <template>
@@ -405,6 +380,8 @@ const warningModalBody = computed(() => {
           @handle-feedback="emit('handleClickGiveFeedback')"
           @handle-add-album="emit('handleClickAddAlbum')"
           @handle-toggle-sensitive-content="handleToggleSensitiveContent"
+          @handle-pin="handlePin"
+          @handle-unpin="handleUnpin"
           @handle-view-feedback="
             router.push({
               name: 'forums-forumId-discussions-feedback-discussionId',
@@ -514,6 +491,16 @@ const warningModalBody = computed(() => {
       :title="'Sensitive content setting updated successfully.'"
       @close-notification="showSuccessfullyUpdatedSensitiveContent = false"
     />
+    <Notification
+      :show="showSuccessfullyPinned"
+      :title="'Discussion pinned successfully.'"
+      @close-notification="showSuccessfullyPinned = false"
+    />
+    <Notification
+      :show="showSuccessfullyUnpinned"
+      :title="'Discussion unpinned successfully.'"
+      @close-notification="showSuccessfullyUnpinned = false"
+    />
     <ErrorBanner
       v-if="deleteDiscussionError"
       class="mt-2"
@@ -523,6 +510,11 @@ const warningModalBody = computed(() => {
       v-if="updateSensitiveContentError"
       class="mt-2"
       :text="updateSensitiveContentError.message"
+    />
+    <ErrorBanner
+      v-if="updateChannelError"
+      class="mt-2"
+      :text="updateChannelError.message"
     />
     <Notification
       :show="showCopiedLinkNotification"

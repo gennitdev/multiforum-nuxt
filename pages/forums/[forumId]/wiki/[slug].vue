@@ -1,14 +1,22 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute, useRouter, useHead } from 'nuxt/app';
-import { GET_CHANNEL, GET_WIKI_PAGE } from '@/graphQLData/channel/queries';
-import { useQuery } from '@vue/apollo-composable';
+import { GET_WIKI_PAGE } from '@/graphQLData/channel/queries';
+import { useQuery, useMutation } from '@vue/apollo-composable';
+import { UPDATE_CHANNEL } from '@/graphQLData/channel/mutations';
 import PencilIcon from '@/components/icons/PencilIcon.vue';
 import PrimaryButton from '@/components/PrimaryButton.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue';
 import OnThisPage from '@/components/wiki/OnThisPage.vue';
-import { timeAgo } from '@/utils';
+import MenuButton from '@/components/MenuButton.vue';
+import EllipsisHorizontal from '@/components/icons/EllipsisHorizontal.vue';
+import Notification from '@/components/NotificationComponent.vue';
+import ErrorBanner from '@/components/ErrorBanner.vue';
+import { timeAgo, ALLOWED_ICONS } from '@/utils';
+import { useChannelPermissions } from '@/composables/useChannelPermissions';
+import type { MenuItemType } from '@/components/IconButtonDropdown.vue';
+import type { WikiPage } from '@/__generated__/graphql';
 
 const route = useRoute();
 const router = useRouter();
@@ -32,15 +40,15 @@ const {
 // Computed property for the wiki page data
 const wikiPage = computed(() => wikiPageResult.value?.wikiPages[0]);
 
-// Query channel to check if wiki is enabled
+// Use composable for permission checking
 const {
-  result: channelResult,
-  loading: channelLoading,
-  error: channelError,
-} = useQuery(GET_CHANNEL, { uniqueName: forumId }, { errorPolicy: 'all' });
-
-// Computed property for the channel data
-const channel = computed(() => channelResult.value?.channels[0]);
+  userPermissions,
+  channel,
+  loading: permissionsLoading,
+  error: permissionsError,
+} = useChannelPermissions({
+  channelId: computed(() => forumId),
+});
 
 // Check if wiki is enabled
 const wikiEnabled = computed(() => channel.value?.wikiEnabled);
@@ -49,6 +57,86 @@ const wikiEnabled = computed(() => channel.value?.wikiEnabled);
 function goToWikiHome() {
   router.push(`/forums/${forumId}/wiki`);
 }
+
+// Check if the wiki page is pinned
+const isPinned = computed(() => {
+  if (!wikiPage.value?.id || !channel.value) {
+    return false;
+  }
+  const pinnedWikiPages = channel.value.PinnedWikiPages || [];
+  return pinnedWikiPages.some((wp: WikiPage) => wp.id === wikiPage.value?.id);
+});
+
+// Pin/Unpin handlers
+const showSuccessfullyPinned = ref(false);
+const showSuccessfullyUnpinned = ref(false);
+
+const {
+  mutate: updateChannel,
+  error: updateChannelError,
+  onDone: onUpdateChannelDone,
+} = useMutation(UPDATE_CHANNEL);
+
+onUpdateChannelDone(() => {
+  if (isPinned.value) {
+    showSuccessfullyUnpinned.value = true;
+    setTimeout(() => {
+      showSuccessfullyUnpinned.value = false;
+    }, 3000);
+  } else {
+    showSuccessfullyPinned.value = true;
+    setTimeout(() => {
+      showSuccessfullyPinned.value = false;
+    }, 3000);
+  }
+});
+
+const handlePin = () => {
+  if (!wikiPage.value?.id || !forumId) return;
+
+  updateChannel({
+    where: { uniqueName: forumId },
+    update: {
+      PinnedWikiPages: [
+        {
+          connect: [{ where: { node: { id: wikiPage.value.id } } }],
+        },
+      ],
+    },
+  });
+};
+
+const handleUnpin = () => {
+  if (!wikiPage.value?.id || !forumId) return;
+
+  updateChannel({
+    where: { uniqueName: forumId },
+    update: {
+      PinnedWikiPages: [
+        {
+          disconnect: [{ where: { node: { id: wikiPage.value.id } } }],
+        },
+      ],
+    },
+  });
+};
+
+// Menu items
+const menuItems = computed((): MenuItemType[] => {
+  const items: MenuItemType[] = [];
+
+  // Add pin/unpin action for users with canUpdateChannel permission
+  if (userPermissions.value.canUpdateChannel) {
+    items.push({
+      label: isPinned.value ? 'Unpin from forum' : 'Pin to top of forum',
+      event: isPinned.value ? 'handleUnpin' : 'handlePin',
+      icon: ALLOWED_ICONS.PIN,
+      value: wikiPage.value?.id || '',
+    });
+  }
+
+  return items;
+});
 
 // SEO metadata setup
 const { onResult: onGetWikiPageResult } = useQuery(
@@ -152,18 +240,18 @@ onGetWikiPageResult((result) => {
 <template>
   <div>
     <div
-      v-if="loading || channelLoading"
+      v-if="loading || permissionsLoading"
       class="flex items-center justify-center p-8"
     >
       <LoadingSpinner size="lg" />
     </div>
 
     <div
-      v-else-if="error || channelError"
+      v-else-if="error || permissionsError"
       class="mx-auto max-w-2xl rounded-lg bg-red-100 p-4 text-red-700 dark:bg-red-900 dark:text-red-200"
     >
       <p>Sorry, there was an error loading the wiki page.</p>
-      <p class="mt-2 text-sm">{{ (error || channelError)?.message }}</p>
+      <p class="mt-2 text-sm">{{ (error || permissionsError)?.message }}</p>
     </div>
 
     <div
@@ -209,14 +297,26 @@ onGetWikiPageResult((result) => {
           <h1 class="text-2xl font-bold dark:text-white">
             {{ wikiPage.title }}
           </h1>
-          <PrimaryButton
-            :label="'Edit Page'"
-            @click="
-              router.push(`/forums/${forumId}/wiki/edit/${wikiPage.slug}`)
-            "
-          >
-            <PencilIcon class="mr-2 h-5 w-5" />
-          </PrimaryButton>
+          <div class="flex items-center gap-2">
+            <PrimaryButton
+              :label="'Edit Page'"
+              @click="
+                router.push(`/forums/${forumId}/wiki/edit/${wikiPage.slug}`)
+              "
+            >
+              <PencilIcon class="mr-2 h-5 w-5" />
+            </PrimaryButton>
+            <MenuButton
+              v-if="menuItems.length > 0"
+              :items="menuItems"
+              @handle-pin="handlePin"
+              @handle-unpin="handleUnpin"
+            >
+              <EllipsisHorizontal
+                class="h-6 w-6 cursor-pointer hover:text-black dark:text-gray-300 dark:hover:text-white"
+              />
+            </MenuButton>
+          </div>
         </div>
         <div
           class="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400"
@@ -281,5 +381,22 @@ onGetWikiPageResult((result) => {
         </div>
       </div>
     </div>
+
+    <!-- Notifications -->
+    <Notification
+      :show="showSuccessfullyPinned"
+      :title="'Wiki page pinned successfully.'"
+      @close-notification="showSuccessfullyPinned = false"
+    />
+    <Notification
+      :show="showSuccessfullyUnpinned"
+      :title="'Wiki page unpinned successfully.'"
+      @close-notification="showSuccessfullyUnpinned = false"
+    />
+    <ErrorBanner
+      v-if="updateChannelError"
+      class="mt-2"
+      :text="updateChannelError.message"
+    />
   </div>
 </template>

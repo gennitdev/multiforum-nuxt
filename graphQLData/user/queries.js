@@ -573,3 +573,48 @@ export const GET_USER_FAVORITE_DOWNLOADS_COUNT = gql`
     }
   }
 `;
+
+export const GET_USER_ROLES_IN_CHANNEL = gql`
+  query getUserRolesInChannel($username: String!, $channelUniqueName: String!) {
+    users(where: { username: $username }) {
+      username
+      ChannelRoles(where: { channelUniqueName: $channelUniqueName }) {
+        canCreateComment
+        canCreateDiscussion
+        canCreateEvent
+        canUpdateChannel
+        canUploadFile
+        canUpvoteComment
+        canUpvoteDiscussion
+        channelUniqueName
+      }
+      ModChannelRoles(where: { channelUniqueName: $channelUniqueName }) {
+        canReport
+        canGiveFeedback
+        canHideComment
+        canHideDiscussion
+        canHideEvent
+        canSuspendUser
+        canOpenSupportTickets
+        canCloseSupportTickets
+        canLockChannel
+        channelUniqueName
+      }
+      Suspensions(
+        where: {
+          channelUniqueName: $channelUniqueName
+          OR: [
+            { suspendedIndefinitely: true }
+            { suspendedUntil_GT: "${new Date().toISOString()}" }
+          ]
+        }
+      ) {
+        id
+        username
+        modProfileName
+        suspendedIndefinitely
+        suspendedUntil
+      }
+    }
+  }
+`;

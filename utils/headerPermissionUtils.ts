@@ -28,6 +28,7 @@ export const getDiscussionHeaderMenuItems = (params: {
   hasAlbum?: boolean;
   feedbackEnabled?: boolean;
   hasSensitiveContent?: boolean;
+  isPinned?: boolean;
 }): MenuItem[] => {
   const {
     isOwnDiscussion,
@@ -38,6 +39,7 @@ export const getDiscussionHeaderMenuItems = (params: {
     hasAlbum = false,
     feedbackEnabled = true,
     hasSensitiveContent = false,
+    isPinned = false,
   } = params;
   let menuItems: MenuItem[] = [];
 
@@ -95,6 +97,16 @@ export const getDiscussionHeaderMenuItems = (params: {
       label: 'Delete',
       event: 'handleDelete',
       icon: ALLOWED_ICONS.DELETE,
+      value: discussionId,
+    });
+  }
+
+  // Add pin/unpin action for users with canUpdateChannel permission
+  if (userPermissions.canUpdateChannel) {
+    menuItems.push({
+      label: isPinned ? 'Unpin from forum' : 'Pin to top of forum',
+      event: isPinned ? 'handleUnpin' : 'handlePin',
+      icon: ALLOWED_ICONS.PIN,
       value: discussionId,
     });
   }
