@@ -16,21 +16,16 @@ import RightArrowIcon from '@/components/icons/RightArrowIcon.vue';
 import ErrorBanner from '@/components/ErrorBanner.vue';
 import CommentHeader from './CommentHeader.vue';
 import { ALLOWED_ICONS } from '@/utils';
-import { usernameVar, modProfileNameVar } from '@/cache';
+import { usernameVar } from '@/cache';
 import { MAX_CHARS_IN_COMMENT } from '@/utils/constants';
 import { getFeedbackPermalinkObject } from '@/utils/routerUtils';
-import { getAllPermissions } from '@/utils/permissionUtils';
 import ArchivedCommentText from './ArchivedCommentText.vue';
-import { GET_CHANNEL } from '@/graphQLData/channel/queries';
-import { USER_IS_MOD_OR_OWNER_IN_CHANNEL } from '@/graphQLData/user/queries';
-import { GET_SERVER_CONFIG } from '@/graphQLData/admin/queries';
+import { useChannelPermissions } from '@/composables/useChannelPermissions';
 import {
   MARK_AS_ANSWERED_BY_COMMENT,
   UNMARK_COMMENT_AS_ANSWER,
 } from '@/graphQLData/discussion/mutations';
-import { DateTime } from 'luxon';
-import { config } from '@/config';
-import { useQuery, useMutation } from '@vue/apollo-composable';
+import { useMutation } from '@vue/apollo-composable';
 
 const MAX_COMMENT_DEPTH = 5;
 const SHOW_MORE_THRESHOLD = 1000;
@@ -186,66 +181,10 @@ const forumId = computed(() => {
   return '';
 });
 
-const { result: getChannelResult } = useQuery(
-  GET_CHANNEL,
-  {
-    uniqueName: forumId,
-    // Using luxon, round down to the nearest hour
-    now: DateTime.local().startOf('hour').toISO(),
-  },
-  {
-    fetchPolicy: 'cache-first',
-    nextFetchPolicy: 'cache-first',
-  }
-);
-
-const { result: getServerResult } = useQuery(
-  GET_SERVER_CONFIG,
-  {
-    serverName: config.serverName,
-  },
-  {
-    fetchPolicy: 'cache-first',
-  }
-);
-
-const standardModRole = computed(() => {
-  // If the channel has a Default Mod Role, return that.
-  if (getChannelResult.value?.channels[0]?.DefaultModRole) {
-    return getChannelResult.value?.channels[0]?.DefaultModRole;
-  }
-  // Otherwise, return the default mod role from the server config.
-  if (getServerResult.value?.serverConfigs[0]?.DefaultModRole) {
-    return getServerResult.value?.serverConfigs[0]?.DefaultModRole;
-  }
-  return null;
+// Use composable for permission checking
+const { userPermissions } = useChannelPermissions({
+  channelId: forumId,
 });
-
-const elevatedModRole = computed(() => {
-  // If the channel has a Default Elevated Mod Role, return that.
-  if (getChannelResult.value?.channels[0]?.ElevatedModRole) {
-    return getChannelResult.value?.channels[0]?.ElevatedModRole;
-  }
-  // Otherwise, return the default elevated mod role from the server config.
-  if (getServerResult.value?.serverConfigs[0]?.DefaultElevatedModRole) {
-    return getServerResult.value?.serverConfigs[0]?.DefaultElevatedModRole;
-  }
-  return null;
-});
-
-const { result: getPermissionResult } = useQuery(
-  USER_IS_MOD_OR_OWNER_IN_CHANNEL,
-  {
-    modDisplayName: modProfileNameVar.value,
-    username: usernameVar.value,
-    channelUniqueName: forumId.value || '',
-  },
-  {
-    enabled:
-      !!modProfileNameVar.value && !!usernameVar.value && !!forumId.value,
-    fetchPolicy: 'cache-first',
-  }
-);
 
 // Mutations for marking comments as best answers
 const { mutate: markAsAnsweredByComment } = useMutation(
@@ -348,24 +287,6 @@ const { mutate: unmarkCommentAsAnswer } = useMutation(
     },
   }
 );
-
-const permissionData = computed(() => {
-  if (getPermissionResult.value?.channels?.[0]) {
-    return getPermissionResult.value.channels[0];
-  }
-  return null;
-});
-
-// Use the utility function to get all permissions at once
-const userPermissions = computed(() => {
-  return getAllPermissions({
-    permissionData: permissionData.value,
-    standardModRole: standardModRole.value,
-    elevatedModRole: elevatedModRole.value,
-    username: usernameVar.value,
-    modProfileName: modProfileNameVar.value,
-  });
-});
 
 const permalinkedCommentId = route.params.commentId;
 const isHighlighted = computed(() => {

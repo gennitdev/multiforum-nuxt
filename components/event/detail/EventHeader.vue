@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
 import type { PropType } from 'vue';
-import { useMutation, useQuery } from '@vue/apollo-composable';
+import { useMutation } from '@vue/apollo-composable';
 import type { Event } from '@/__generated__/graphql';
 import {
   CANCEL_EVENT,
@@ -19,18 +19,14 @@ import WarningModal from '@/components/WarningModal.vue';
 import ErrorBanner from '@/components/ErrorBanner.vue';
 import UsernameWithTooltip from '@/components/UsernameWithTooltip.vue';
 import { getDuration } from '@/utils';
-import { getAllPermissions } from '@/utils/permissionUtils';
 import { getEventHeaderMenuItems } from '@/utils/headerPermissionUtils';
 import GenericFeedbackFormModal from '@/components/GenericFeedbackFormModal.vue';
 import BrokenRulesModal from '@/components/mod/BrokenRulesModal.vue';
-import { modProfileNameVar, usernameVar } from '@/cache';
+import { usernameVar } from '@/cache';
 import { useRoute, useRouter } from 'nuxt/app';
 import InfoBanner from '@/components/InfoBanner.vue';
 import UnarchiveModal from '@/components/mod/UnarchiveModal.vue';
-import { GET_CHANNEL } from '@/graphQLData/channel/queries';
-import { USER_IS_MOD_OR_OWNER_IN_CHANNEL } from '@/graphQLData/user/queries';
-import { GET_SERVER_CONFIG } from '@/graphQLData/admin/queries';
-import { config } from '@/config';
+import { useChannelPermissions } from '@/composables/useChannelPermissions';
 
 const props = defineProps({
   eventData: {
@@ -83,93 +79,9 @@ const channelId = computed(() => {
   return props.eventData?.EventChannels?.[0]?.channelUniqueName || '';
 });
 
-// Query the channel data to get roles
-const { result: getChannelResult } = useQuery(
-  GET_CHANNEL,
-  {
-    uniqueName: props.eventChannelId || channelId.value,
-    // Using luxon, round down to the nearest hour
-    now: DateTime.local().startOf('hour').toISO(),
-  },
-  {
-    fetchPolicy: 'cache-first',
-    nextFetchPolicy: 'cache-first',
-    enabled: computed(() => !!props.eventChannelId || !!channelId.value),
-  }
-);
-
-// Query server config to get default roles
-const { result: getServerResult } = useQuery(
-  GET_SERVER_CONFIG,
-  {
-    serverName: config.serverName,
-  },
-  {
-    fetchPolicy: 'cache-first',
-  }
-);
-
-// Get the standard and elevated mod roles from the channel or server default
-const standardModRole = computed(() => {
-  // If the channel has a Default Mod Role, return that
-  if (getChannelResult.value?.channels[0]?.DefaultModRole) {
-    return getChannelResult.value?.channels[0]?.DefaultModRole;
-  }
-  // Otherwise, return the default mod role from the server config
-  if (getServerResult.value?.serverConfigs[0]?.DefaultModRole) {
-    return getServerResult.value?.serverConfigs[0]?.DefaultModRole;
-  }
-  return null;
-});
-
-const elevatedModRole = computed(() => {
-  // If the channel has a Default Elevated Mod Role, return that
-  if (getChannelResult.value?.channels[0]?.ElevatedModRole) {
-    return getChannelResult.value?.channels[0]?.ElevatedModRole;
-  }
-  // Otherwise, return the default elevated mod role from server config
-  if (getServerResult.value?.serverConfigs[0]?.DefaultElevatedModRole) {
-    return getServerResult.value?.serverConfigs[0]?.DefaultElevatedModRole;
-  }
-  return null;
-});
-
-// Query user's permissions in the channel
-const { result: getPermissionResult } = useQuery(
-  USER_IS_MOD_OR_OWNER_IN_CHANNEL,
-  {
-    modDisplayName: modProfileNameVar.value,
-    username: usernameVar.value,
-    channelUniqueName: props.eventChannelId || channelId.value || '',
-  },
-  {
-    enabled: computed(
-      () =>
-        !!modProfileNameVar.value &&
-        !!usernameVar.value &&
-        (!!props.eventChannelId || !!channelId.value)
-    ),
-    fetchPolicy: 'cache-first',
-  }
-);
-
-// Get permission data from the query result
-const permissionData = computed(() => {
-  if (getPermissionResult.value?.channels?.[0]) {
-    return getPermissionResult.value.channels[0];
-  }
-  return null;
-});
-
-// Get all permissions for the current user using our utility function
-const userPermissions = computed(() => {
-  return getAllPermissions({
-    permissionData: permissionData.value,
-    standardModRole: standardModRole.value,
-    elevatedModRole: elevatedModRole.value,
-    username: usernameVar.value,
-    modProfileName: modProfileNameVar.value,
-  });
+// Use composable for permission checking
+const { userPermissions, channel } = useChannelPermissions({
+  channelId: computed(() => (props.eventChannelId || channelId.value) as string),
 });
 
 const permalinkObject = computed(() => {
@@ -289,8 +201,7 @@ const menuItems = computed(() => {
     isLoggedIn: !!usernameVar.value,
     eventId: props.eventData.id,
     isOnFeedbackPage: route.name === 'EventFeedback',
-    feedbackEnabled:
-      getChannelResult.value?.channels[0]?.feedbackEnabled ?? true,
+    feedbackEnabled: channel.value?.feedbackEnabled ?? true,
   });
 });
 
@@ -342,25 +253,6 @@ function handleViewFeedback() {
 function handleFeedbackInput(event: string) {
   feedbackText.value = event;
 }
-// Enhanced debug log to diagnose why permissionData is null
-console.log('EVENT HEADER DEBUG:', {
-  userPerms: userPermissions.value,
-  queryParams: {
-    modDisplayName: modProfileNameVar.value,
-    username: usernameVar.value,
-    channelUniqueName: props.eventChannelId || channelId.value || '',
-    queryEnabled:
-      !!modProfileNameVar.value &&
-      !!usernameVar.value &&
-      (!!props.eventChannelId || !!channelId.value),
-  },
-  permissionQueryResult: getPermissionResult.value,
-  permissionData: permissionData.value,
-  roles: {
-    standardModRole: standardModRole.value,
-    elevatedModRole: elevatedModRole.value,
-  },
-});
 </script>
 
 <template>
