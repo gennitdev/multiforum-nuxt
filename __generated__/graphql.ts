@@ -1,4 +1,4 @@
- 
+/* eslint-disable */
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -1235,6 +1235,12 @@ export type Channel = {
   PendingOwnerInvites: Array<User>;
   PendingOwnerInvitesAggregate?: Maybe<ChannelUserPendingOwnerInvitesAggregationSelection>;
   PendingOwnerInvitesConnection: ChannelPendingOwnerInvitesConnection;
+  PinnedDiscussionChannels: Array<DiscussionChannel>;
+  PinnedDiscussionChannelsAggregate?: Maybe<ChannelDiscussionChannelPinnedDiscussionChannelsAggregationSelection>;
+  PinnedDiscussionChannelsConnection: ChannelPinnedDiscussionChannelsConnection;
+  PinnedWikiPages: Array<WikiPage>;
+  PinnedWikiPagesAggregate?: Maybe<ChannelWikiPagePinnedWikiPagesAggregationSelection>;
+  PinnedWikiPagesConnection: ChannelPinnedWikiPagesConnection;
   RelatedChannels: Array<Channel>;
   RelatedChannelsAggregate?: Maybe<ChannelChannelRelatedChannelsAggregationSelection>;
   RelatedChannelsConnection: ChannelRelatedChannelsConnection;
@@ -1587,6 +1593,50 @@ export type ChannelPendingOwnerInvitesConnectionArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   sort?: InputMaybe<Array<ChannelPendingOwnerInvitesConnectionSort>>;
   where?: InputMaybe<ChannelPendingOwnerInvitesConnectionWhere>;
+};
+
+
+export type ChannelPinnedDiscussionChannelsArgs = {
+  directed?: InputMaybe<Scalars['Boolean']['input']>;
+  options?: InputMaybe<DiscussionChannelOptions>;
+  where?: InputMaybe<DiscussionChannelWhere>;
+};
+
+
+export type ChannelPinnedDiscussionChannelsAggregateArgs = {
+  directed?: InputMaybe<Scalars['Boolean']['input']>;
+  where?: InputMaybe<DiscussionChannelWhere>;
+};
+
+
+export type ChannelPinnedDiscussionChannelsConnectionArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  directed?: InputMaybe<Scalars['Boolean']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  sort?: InputMaybe<Array<ChannelPinnedDiscussionChannelsConnectionSort>>;
+  where?: InputMaybe<ChannelPinnedDiscussionChannelsConnectionWhere>;
+};
+
+
+export type ChannelPinnedWikiPagesArgs = {
+  directed?: InputMaybe<Scalars['Boolean']['input']>;
+  options?: InputMaybe<WikiPageOptions>;
+  where?: InputMaybe<WikiPageWhere>;
+};
+
+
+export type ChannelPinnedWikiPagesAggregateArgs = {
+  directed?: InputMaybe<Scalars['Boolean']['input']>;
+  where?: InputMaybe<WikiPageWhere>;
+};
+
+
+export type ChannelPinnedWikiPagesConnectionArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  directed?: InputMaybe<Scalars['Boolean']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  sort?: InputMaybe<Array<ChannelPinnedWikiPagesConnectionSort>>;
+  where?: InputMaybe<ChannelPinnedWikiPagesConnectionWhere>;
 };
 
 
@@ -2304,6 +2354,8 @@ export type ChannelConnectInput = {
   Moderators?: InputMaybe<Array<ChannelModeratorsConnectFieldInput>>;
   PendingModInvites?: InputMaybe<Array<ChannelPendingModInvitesConnectFieldInput>>;
   PendingOwnerInvites?: InputMaybe<Array<ChannelPendingOwnerInvitesConnectFieldInput>>;
+  PinnedDiscussionChannels?: InputMaybe<Array<ChannelPinnedDiscussionChannelsConnectFieldInput>>;
+  PinnedWikiPages?: InputMaybe<Array<ChannelPinnedWikiPagesConnectFieldInput>>;
   RelatedChannels?: InputMaybe<Array<ChannelRelatedChannelsConnectFieldInput>>;
   SuspendedModRole?: InputMaybe<ChannelSuspendedModRoleConnectFieldInput>;
   SuspendedMods?: InputMaybe<Array<ChannelSuspendedModsConnectFieldInput>>;
@@ -2351,6 +2403,8 @@ export type ChannelConnectedRelationships = {
   Moderators?: Maybe<ChannelModeratorsConnectedRelationship>;
   PendingModInvites?: Maybe<ChannelPendingModInvitesConnectedRelationship>;
   PendingOwnerInvites?: Maybe<ChannelPendingOwnerInvitesConnectedRelationship>;
+  PinnedDiscussionChannels?: Maybe<ChannelPinnedDiscussionChannelsConnectedRelationship>;
+  PinnedWikiPages?: Maybe<ChannelPinnedWikiPagesConnectedRelationship>;
   RelatedChannels?: Maybe<ChannelRelatedChannelsConnectedRelationship>;
   SuspendedModRole?: Maybe<ChannelSuspendedModRoleConnectedRelationship>;
   SuspendedMods?: Maybe<ChannelSuspendedModsConnectedRelationship>;
@@ -2375,6 +2429,8 @@ export type ChannelCreateInput = {
   Moderators?: InputMaybe<ChannelModeratorsFieldInput>;
   PendingModInvites?: InputMaybe<ChannelPendingModInvitesFieldInput>;
   PendingOwnerInvites?: InputMaybe<ChannelPendingOwnerInvitesFieldInput>;
+  PinnedDiscussionChannels?: InputMaybe<ChannelPinnedDiscussionChannelsFieldInput>;
+  PinnedWikiPages?: InputMaybe<ChannelPinnedWikiPagesFieldInput>;
   RelatedChannels?: InputMaybe<ChannelRelatedChannelsFieldInput>;
   SuspendedModRole?: InputMaybe<ChannelSuspendedModRoleFieldInput>;
   SuspendedMods?: InputMaybe<ChannelSuspendedModsFieldInput>;
@@ -2714,6 +2770,8 @@ export type ChannelDeleteInput = {
   Moderators?: InputMaybe<Array<ChannelModeratorsDeleteFieldInput>>;
   PendingModInvites?: InputMaybe<Array<ChannelPendingModInvitesDeleteFieldInput>>;
   PendingOwnerInvites?: InputMaybe<Array<ChannelPendingOwnerInvitesDeleteFieldInput>>;
+  PinnedDiscussionChannels?: InputMaybe<Array<ChannelPinnedDiscussionChannelsDeleteFieldInput>>;
+  PinnedWikiPages?: InputMaybe<Array<ChannelPinnedWikiPagesDeleteFieldInput>>;
   RelatedChannels?: InputMaybe<Array<ChannelRelatedChannelsDeleteFieldInput>>;
   SuspendedModRole?: InputMaybe<ChannelSuspendedModRoleDeleteFieldInput>;
   SuspendedMods?: InputMaybe<Array<ChannelSuspendedModsDeleteFieldInput>>;
@@ -2745,6 +2803,8 @@ export type ChannelDisconnectInput = {
   Moderators?: InputMaybe<Array<ChannelModeratorsDisconnectFieldInput>>;
   PendingModInvites?: InputMaybe<Array<ChannelPendingModInvitesDisconnectFieldInput>>;
   PendingOwnerInvites?: InputMaybe<Array<ChannelPendingOwnerInvitesDisconnectFieldInput>>;
+  PinnedDiscussionChannels?: InputMaybe<Array<ChannelPinnedDiscussionChannelsDisconnectFieldInput>>;
+  PinnedWikiPages?: InputMaybe<Array<ChannelPinnedWikiPagesDisconnectFieldInput>>;
   RelatedChannels?: InputMaybe<Array<ChannelRelatedChannelsDisconnectFieldInput>>;
   SuspendedModRole?: InputMaybe<ChannelSuspendedModRoleDisconnectFieldInput>;
   SuspendedMods?: InputMaybe<Array<ChannelSuspendedModsDisconnectFieldInput>>;
@@ -2762,6 +2822,21 @@ export type ChannelDiscussionChannelDiscussionChannelsAggregationSelection = {
 
 export type ChannelDiscussionChannelDiscussionChannelsNodeAggregateSelection = {
   __typename?: 'ChannelDiscussionChannelDiscussionChannelsNodeAggregateSelection';
+  channelUniqueName: StringAggregateSelection;
+  createdAt: DateTimeAggregateSelection;
+  discussionId: IdAggregateSelection;
+  id: IdAggregateSelection;
+  weightedVotesCount: FloatAggregateSelection;
+};
+
+export type ChannelDiscussionChannelPinnedDiscussionChannelsAggregationSelection = {
+  __typename?: 'ChannelDiscussionChannelPinnedDiscussionChannelsAggregationSelection';
+  count: Scalars['Int']['output'];
+  node?: Maybe<ChannelDiscussionChannelPinnedDiscussionChannelsNodeAggregateSelection>;
+};
+
+export type ChannelDiscussionChannelPinnedDiscussionChannelsNodeAggregateSelection = {
+  __typename?: 'ChannelDiscussionChannelPinnedDiscussionChannelsNodeAggregateSelection';
   channelUniqueName: StringAggregateSelection;
   createdAt: DateTimeAggregateSelection;
   discussionId: IdAggregateSelection;
@@ -4889,6 +4964,311 @@ export type ChannelPendingOwnerInvitesUpdateFieldInput = {
   where?: InputMaybe<ChannelPendingOwnerInvitesConnectionWhere>;
 };
 
+export type ChannelPinnedDiscussionChannelsAggregateInput = {
+  AND?: InputMaybe<Array<ChannelPinnedDiscussionChannelsAggregateInput>>;
+  NOT?: InputMaybe<ChannelPinnedDiscussionChannelsAggregateInput>;
+  OR?: InputMaybe<Array<ChannelPinnedDiscussionChannelsAggregateInput>>;
+  count?: InputMaybe<Scalars['Int']['input']>;
+  count_GT?: InputMaybe<Scalars['Int']['input']>;
+  count_GTE?: InputMaybe<Scalars['Int']['input']>;
+  count_LT?: InputMaybe<Scalars['Int']['input']>;
+  count_LTE?: InputMaybe<Scalars['Int']['input']>;
+  node?: InputMaybe<ChannelPinnedDiscussionChannelsNodeAggregationWhereInput>;
+};
+
+export type ChannelPinnedDiscussionChannelsConnectFieldInput = {
+  connect?: InputMaybe<Array<DiscussionChannelConnectInput>>;
+  /** Whether or not to overwrite any matching relationship with the new properties. */
+  overwrite?: Scalars['Boolean']['input'];
+  where?: InputMaybe<DiscussionChannelConnectWhere>;
+};
+
+export type ChannelPinnedDiscussionChannelsConnectedRelationship = {
+  __typename?: 'ChannelPinnedDiscussionChannelsConnectedRelationship';
+  node: DiscussionChannelEventPayload;
+};
+
+export type ChannelPinnedDiscussionChannelsConnection = {
+  __typename?: 'ChannelPinnedDiscussionChannelsConnection';
+  edges: Array<ChannelPinnedDiscussionChannelsRelationship>;
+  pageInfo: PageInfo;
+  totalCount: Scalars['Int']['output'];
+};
+
+export type ChannelPinnedDiscussionChannelsConnectionSort = {
+  node?: InputMaybe<DiscussionChannelSort>;
+};
+
+export type ChannelPinnedDiscussionChannelsConnectionWhere = {
+  AND?: InputMaybe<Array<ChannelPinnedDiscussionChannelsConnectionWhere>>;
+  NOT?: InputMaybe<ChannelPinnedDiscussionChannelsConnectionWhere>;
+  OR?: InputMaybe<Array<ChannelPinnedDiscussionChannelsConnectionWhere>>;
+  node?: InputMaybe<DiscussionChannelWhere>;
+};
+
+export type ChannelPinnedDiscussionChannelsCreateFieldInput = {
+  node: DiscussionChannelCreateInput;
+};
+
+export type ChannelPinnedDiscussionChannelsDeleteFieldInput = {
+  delete?: InputMaybe<DiscussionChannelDeleteInput>;
+  where?: InputMaybe<ChannelPinnedDiscussionChannelsConnectionWhere>;
+};
+
+export type ChannelPinnedDiscussionChannelsDisconnectFieldInput = {
+  disconnect?: InputMaybe<DiscussionChannelDisconnectInput>;
+  where?: InputMaybe<ChannelPinnedDiscussionChannelsConnectionWhere>;
+};
+
+export type ChannelPinnedDiscussionChannelsFieldInput = {
+  connect?: InputMaybe<Array<ChannelPinnedDiscussionChannelsConnectFieldInput>>;
+  create?: InputMaybe<Array<ChannelPinnedDiscussionChannelsCreateFieldInput>>;
+};
+
+export type ChannelPinnedDiscussionChannelsNodeAggregationWhereInput = {
+  AND?: InputMaybe<Array<ChannelPinnedDiscussionChannelsNodeAggregationWhereInput>>;
+  NOT?: InputMaybe<ChannelPinnedDiscussionChannelsNodeAggregationWhereInput>;
+  OR?: InputMaybe<Array<ChannelPinnedDiscussionChannelsNodeAggregationWhereInput>>;
+  channelUniqueName_AVERAGE_LENGTH_EQUAL?: InputMaybe<Scalars['Float']['input']>;
+  channelUniqueName_AVERAGE_LENGTH_GT?: InputMaybe<Scalars['Float']['input']>;
+  channelUniqueName_AVERAGE_LENGTH_GTE?: InputMaybe<Scalars['Float']['input']>;
+  channelUniqueName_AVERAGE_LENGTH_LT?: InputMaybe<Scalars['Float']['input']>;
+  channelUniqueName_AVERAGE_LENGTH_LTE?: InputMaybe<Scalars['Float']['input']>;
+  channelUniqueName_LONGEST_LENGTH_EQUAL?: InputMaybe<Scalars['Int']['input']>;
+  channelUniqueName_LONGEST_LENGTH_GT?: InputMaybe<Scalars['Int']['input']>;
+  channelUniqueName_LONGEST_LENGTH_GTE?: InputMaybe<Scalars['Int']['input']>;
+  channelUniqueName_LONGEST_LENGTH_LT?: InputMaybe<Scalars['Int']['input']>;
+  channelUniqueName_LONGEST_LENGTH_LTE?: InputMaybe<Scalars['Int']['input']>;
+  channelUniqueName_SHORTEST_LENGTH_EQUAL?: InputMaybe<Scalars['Int']['input']>;
+  channelUniqueName_SHORTEST_LENGTH_GT?: InputMaybe<Scalars['Int']['input']>;
+  channelUniqueName_SHORTEST_LENGTH_GTE?: InputMaybe<Scalars['Int']['input']>;
+  channelUniqueName_SHORTEST_LENGTH_LT?: InputMaybe<Scalars['Int']['input']>;
+  channelUniqueName_SHORTEST_LENGTH_LTE?: InputMaybe<Scalars['Int']['input']>;
+  createdAt_MAX_EQUAL?: InputMaybe<Scalars['DateTime']['input']>;
+  createdAt_MAX_GT?: InputMaybe<Scalars['DateTime']['input']>;
+  createdAt_MAX_GTE?: InputMaybe<Scalars['DateTime']['input']>;
+  createdAt_MAX_LT?: InputMaybe<Scalars['DateTime']['input']>;
+  createdAt_MAX_LTE?: InputMaybe<Scalars['DateTime']['input']>;
+  createdAt_MIN_EQUAL?: InputMaybe<Scalars['DateTime']['input']>;
+  createdAt_MIN_GT?: InputMaybe<Scalars['DateTime']['input']>;
+  createdAt_MIN_GTE?: InputMaybe<Scalars['DateTime']['input']>;
+  createdAt_MIN_LT?: InputMaybe<Scalars['DateTime']['input']>;
+  createdAt_MIN_LTE?: InputMaybe<Scalars['DateTime']['input']>;
+  weightedVotesCount_AVERAGE_EQUAL?: InputMaybe<Scalars['Float']['input']>;
+  weightedVotesCount_AVERAGE_GT?: InputMaybe<Scalars['Float']['input']>;
+  weightedVotesCount_AVERAGE_GTE?: InputMaybe<Scalars['Float']['input']>;
+  weightedVotesCount_AVERAGE_LT?: InputMaybe<Scalars['Float']['input']>;
+  weightedVotesCount_AVERAGE_LTE?: InputMaybe<Scalars['Float']['input']>;
+  weightedVotesCount_MAX_EQUAL?: InputMaybe<Scalars['Float']['input']>;
+  weightedVotesCount_MAX_GT?: InputMaybe<Scalars['Float']['input']>;
+  weightedVotesCount_MAX_GTE?: InputMaybe<Scalars['Float']['input']>;
+  weightedVotesCount_MAX_LT?: InputMaybe<Scalars['Float']['input']>;
+  weightedVotesCount_MAX_LTE?: InputMaybe<Scalars['Float']['input']>;
+  weightedVotesCount_MIN_EQUAL?: InputMaybe<Scalars['Float']['input']>;
+  weightedVotesCount_MIN_GT?: InputMaybe<Scalars['Float']['input']>;
+  weightedVotesCount_MIN_GTE?: InputMaybe<Scalars['Float']['input']>;
+  weightedVotesCount_MIN_LT?: InputMaybe<Scalars['Float']['input']>;
+  weightedVotesCount_MIN_LTE?: InputMaybe<Scalars['Float']['input']>;
+  weightedVotesCount_SUM_EQUAL?: InputMaybe<Scalars['Float']['input']>;
+  weightedVotesCount_SUM_GT?: InputMaybe<Scalars['Float']['input']>;
+  weightedVotesCount_SUM_GTE?: InputMaybe<Scalars['Float']['input']>;
+  weightedVotesCount_SUM_LT?: InputMaybe<Scalars['Float']['input']>;
+  weightedVotesCount_SUM_LTE?: InputMaybe<Scalars['Float']['input']>;
+};
+
+export type ChannelPinnedDiscussionChannelsRelationship = {
+  __typename?: 'ChannelPinnedDiscussionChannelsRelationship';
+  cursor: Scalars['String']['output'];
+  node: DiscussionChannel;
+};
+
+export type ChannelPinnedDiscussionChannelsRelationshipSubscriptionWhere = {
+  node?: InputMaybe<DiscussionChannelSubscriptionWhere>;
+};
+
+export type ChannelPinnedDiscussionChannelsUpdateConnectionInput = {
+  node?: InputMaybe<DiscussionChannelUpdateInput>;
+};
+
+export type ChannelPinnedDiscussionChannelsUpdateFieldInput = {
+  connect?: InputMaybe<Array<ChannelPinnedDiscussionChannelsConnectFieldInput>>;
+  create?: InputMaybe<Array<ChannelPinnedDiscussionChannelsCreateFieldInput>>;
+  delete?: InputMaybe<Array<ChannelPinnedDiscussionChannelsDeleteFieldInput>>;
+  disconnect?: InputMaybe<Array<ChannelPinnedDiscussionChannelsDisconnectFieldInput>>;
+  update?: InputMaybe<ChannelPinnedDiscussionChannelsUpdateConnectionInput>;
+  where?: InputMaybe<ChannelPinnedDiscussionChannelsConnectionWhere>;
+};
+
+export type ChannelPinnedWikiPagesAggregateInput = {
+  AND?: InputMaybe<Array<ChannelPinnedWikiPagesAggregateInput>>;
+  NOT?: InputMaybe<ChannelPinnedWikiPagesAggregateInput>;
+  OR?: InputMaybe<Array<ChannelPinnedWikiPagesAggregateInput>>;
+  count?: InputMaybe<Scalars['Int']['input']>;
+  count_GT?: InputMaybe<Scalars['Int']['input']>;
+  count_GTE?: InputMaybe<Scalars['Int']['input']>;
+  count_LT?: InputMaybe<Scalars['Int']['input']>;
+  count_LTE?: InputMaybe<Scalars['Int']['input']>;
+  node?: InputMaybe<ChannelPinnedWikiPagesNodeAggregationWhereInput>;
+};
+
+export type ChannelPinnedWikiPagesConnectFieldInput = {
+  connect?: InputMaybe<Array<WikiPageConnectInput>>;
+  /** Whether or not to overwrite any matching relationship with the new properties. */
+  overwrite?: Scalars['Boolean']['input'];
+  where?: InputMaybe<WikiPageConnectWhere>;
+};
+
+export type ChannelPinnedWikiPagesConnectedRelationship = {
+  __typename?: 'ChannelPinnedWikiPagesConnectedRelationship';
+  node: WikiPageEventPayload;
+};
+
+export type ChannelPinnedWikiPagesConnection = {
+  __typename?: 'ChannelPinnedWikiPagesConnection';
+  edges: Array<ChannelPinnedWikiPagesRelationship>;
+  pageInfo: PageInfo;
+  totalCount: Scalars['Int']['output'];
+};
+
+export type ChannelPinnedWikiPagesConnectionSort = {
+  node?: InputMaybe<WikiPageSort>;
+};
+
+export type ChannelPinnedWikiPagesConnectionWhere = {
+  AND?: InputMaybe<Array<ChannelPinnedWikiPagesConnectionWhere>>;
+  NOT?: InputMaybe<ChannelPinnedWikiPagesConnectionWhere>;
+  OR?: InputMaybe<Array<ChannelPinnedWikiPagesConnectionWhere>>;
+  node?: InputMaybe<WikiPageWhere>;
+};
+
+export type ChannelPinnedWikiPagesCreateFieldInput = {
+  node: WikiPageCreateInput;
+};
+
+export type ChannelPinnedWikiPagesDeleteFieldInput = {
+  delete?: InputMaybe<WikiPageDeleteInput>;
+  where?: InputMaybe<ChannelPinnedWikiPagesConnectionWhere>;
+};
+
+export type ChannelPinnedWikiPagesDisconnectFieldInput = {
+  disconnect?: InputMaybe<WikiPageDisconnectInput>;
+  where?: InputMaybe<ChannelPinnedWikiPagesConnectionWhere>;
+};
+
+export type ChannelPinnedWikiPagesFieldInput = {
+  connect?: InputMaybe<Array<ChannelPinnedWikiPagesConnectFieldInput>>;
+  create?: InputMaybe<Array<ChannelPinnedWikiPagesCreateFieldInput>>;
+};
+
+export type ChannelPinnedWikiPagesNodeAggregationWhereInput = {
+  AND?: InputMaybe<Array<ChannelPinnedWikiPagesNodeAggregationWhereInput>>;
+  NOT?: InputMaybe<ChannelPinnedWikiPagesNodeAggregationWhereInput>;
+  OR?: InputMaybe<Array<ChannelPinnedWikiPagesNodeAggregationWhereInput>>;
+  body_AVERAGE_LENGTH_EQUAL?: InputMaybe<Scalars['Float']['input']>;
+  body_AVERAGE_LENGTH_GT?: InputMaybe<Scalars['Float']['input']>;
+  body_AVERAGE_LENGTH_GTE?: InputMaybe<Scalars['Float']['input']>;
+  body_AVERAGE_LENGTH_LT?: InputMaybe<Scalars['Float']['input']>;
+  body_AVERAGE_LENGTH_LTE?: InputMaybe<Scalars['Float']['input']>;
+  body_LONGEST_LENGTH_EQUAL?: InputMaybe<Scalars['Int']['input']>;
+  body_LONGEST_LENGTH_GT?: InputMaybe<Scalars['Int']['input']>;
+  body_LONGEST_LENGTH_GTE?: InputMaybe<Scalars['Int']['input']>;
+  body_LONGEST_LENGTH_LT?: InputMaybe<Scalars['Int']['input']>;
+  body_LONGEST_LENGTH_LTE?: InputMaybe<Scalars['Int']['input']>;
+  body_SHORTEST_LENGTH_EQUAL?: InputMaybe<Scalars['Int']['input']>;
+  body_SHORTEST_LENGTH_GT?: InputMaybe<Scalars['Int']['input']>;
+  body_SHORTEST_LENGTH_GTE?: InputMaybe<Scalars['Int']['input']>;
+  body_SHORTEST_LENGTH_LT?: InputMaybe<Scalars['Int']['input']>;
+  body_SHORTEST_LENGTH_LTE?: InputMaybe<Scalars['Int']['input']>;
+  channelUniqueName_AVERAGE_LENGTH_EQUAL?: InputMaybe<Scalars['Float']['input']>;
+  channelUniqueName_AVERAGE_LENGTH_GT?: InputMaybe<Scalars['Float']['input']>;
+  channelUniqueName_AVERAGE_LENGTH_GTE?: InputMaybe<Scalars['Float']['input']>;
+  channelUniqueName_AVERAGE_LENGTH_LT?: InputMaybe<Scalars['Float']['input']>;
+  channelUniqueName_AVERAGE_LENGTH_LTE?: InputMaybe<Scalars['Float']['input']>;
+  channelUniqueName_LONGEST_LENGTH_EQUAL?: InputMaybe<Scalars['Int']['input']>;
+  channelUniqueName_LONGEST_LENGTH_GT?: InputMaybe<Scalars['Int']['input']>;
+  channelUniqueName_LONGEST_LENGTH_GTE?: InputMaybe<Scalars['Int']['input']>;
+  channelUniqueName_LONGEST_LENGTH_LT?: InputMaybe<Scalars['Int']['input']>;
+  channelUniqueName_LONGEST_LENGTH_LTE?: InputMaybe<Scalars['Int']['input']>;
+  channelUniqueName_SHORTEST_LENGTH_EQUAL?: InputMaybe<Scalars['Int']['input']>;
+  channelUniqueName_SHORTEST_LENGTH_GT?: InputMaybe<Scalars['Int']['input']>;
+  channelUniqueName_SHORTEST_LENGTH_GTE?: InputMaybe<Scalars['Int']['input']>;
+  channelUniqueName_SHORTEST_LENGTH_LT?: InputMaybe<Scalars['Int']['input']>;
+  channelUniqueName_SHORTEST_LENGTH_LTE?: InputMaybe<Scalars['Int']['input']>;
+  createdAt_MAX_EQUAL?: InputMaybe<Scalars['DateTime']['input']>;
+  createdAt_MAX_GT?: InputMaybe<Scalars['DateTime']['input']>;
+  createdAt_MAX_GTE?: InputMaybe<Scalars['DateTime']['input']>;
+  createdAt_MAX_LT?: InputMaybe<Scalars['DateTime']['input']>;
+  createdAt_MAX_LTE?: InputMaybe<Scalars['DateTime']['input']>;
+  createdAt_MIN_EQUAL?: InputMaybe<Scalars['DateTime']['input']>;
+  createdAt_MIN_GT?: InputMaybe<Scalars['DateTime']['input']>;
+  createdAt_MIN_GTE?: InputMaybe<Scalars['DateTime']['input']>;
+  createdAt_MIN_LT?: InputMaybe<Scalars['DateTime']['input']>;
+  createdAt_MIN_LTE?: InputMaybe<Scalars['DateTime']['input']>;
+  slug_AVERAGE_LENGTH_EQUAL?: InputMaybe<Scalars['Float']['input']>;
+  slug_AVERAGE_LENGTH_GT?: InputMaybe<Scalars['Float']['input']>;
+  slug_AVERAGE_LENGTH_GTE?: InputMaybe<Scalars['Float']['input']>;
+  slug_AVERAGE_LENGTH_LT?: InputMaybe<Scalars['Float']['input']>;
+  slug_AVERAGE_LENGTH_LTE?: InputMaybe<Scalars['Float']['input']>;
+  slug_LONGEST_LENGTH_EQUAL?: InputMaybe<Scalars['Int']['input']>;
+  slug_LONGEST_LENGTH_GT?: InputMaybe<Scalars['Int']['input']>;
+  slug_LONGEST_LENGTH_GTE?: InputMaybe<Scalars['Int']['input']>;
+  slug_LONGEST_LENGTH_LT?: InputMaybe<Scalars['Int']['input']>;
+  slug_LONGEST_LENGTH_LTE?: InputMaybe<Scalars['Int']['input']>;
+  slug_SHORTEST_LENGTH_EQUAL?: InputMaybe<Scalars['Int']['input']>;
+  slug_SHORTEST_LENGTH_GT?: InputMaybe<Scalars['Int']['input']>;
+  slug_SHORTEST_LENGTH_GTE?: InputMaybe<Scalars['Int']['input']>;
+  slug_SHORTEST_LENGTH_LT?: InputMaybe<Scalars['Int']['input']>;
+  slug_SHORTEST_LENGTH_LTE?: InputMaybe<Scalars['Int']['input']>;
+  title_AVERAGE_LENGTH_EQUAL?: InputMaybe<Scalars['Float']['input']>;
+  title_AVERAGE_LENGTH_GT?: InputMaybe<Scalars['Float']['input']>;
+  title_AVERAGE_LENGTH_GTE?: InputMaybe<Scalars['Float']['input']>;
+  title_AVERAGE_LENGTH_LT?: InputMaybe<Scalars['Float']['input']>;
+  title_AVERAGE_LENGTH_LTE?: InputMaybe<Scalars['Float']['input']>;
+  title_LONGEST_LENGTH_EQUAL?: InputMaybe<Scalars['Int']['input']>;
+  title_LONGEST_LENGTH_GT?: InputMaybe<Scalars['Int']['input']>;
+  title_LONGEST_LENGTH_GTE?: InputMaybe<Scalars['Int']['input']>;
+  title_LONGEST_LENGTH_LT?: InputMaybe<Scalars['Int']['input']>;
+  title_LONGEST_LENGTH_LTE?: InputMaybe<Scalars['Int']['input']>;
+  title_SHORTEST_LENGTH_EQUAL?: InputMaybe<Scalars['Int']['input']>;
+  title_SHORTEST_LENGTH_GT?: InputMaybe<Scalars['Int']['input']>;
+  title_SHORTEST_LENGTH_GTE?: InputMaybe<Scalars['Int']['input']>;
+  title_SHORTEST_LENGTH_LT?: InputMaybe<Scalars['Int']['input']>;
+  title_SHORTEST_LENGTH_LTE?: InputMaybe<Scalars['Int']['input']>;
+  updatedAt_MAX_EQUAL?: InputMaybe<Scalars['DateTime']['input']>;
+  updatedAt_MAX_GT?: InputMaybe<Scalars['DateTime']['input']>;
+  updatedAt_MAX_GTE?: InputMaybe<Scalars['DateTime']['input']>;
+  updatedAt_MAX_LT?: InputMaybe<Scalars['DateTime']['input']>;
+  updatedAt_MAX_LTE?: InputMaybe<Scalars['DateTime']['input']>;
+  updatedAt_MIN_EQUAL?: InputMaybe<Scalars['DateTime']['input']>;
+  updatedAt_MIN_GT?: InputMaybe<Scalars['DateTime']['input']>;
+  updatedAt_MIN_GTE?: InputMaybe<Scalars['DateTime']['input']>;
+  updatedAt_MIN_LT?: InputMaybe<Scalars['DateTime']['input']>;
+  updatedAt_MIN_LTE?: InputMaybe<Scalars['DateTime']['input']>;
+};
+
+export type ChannelPinnedWikiPagesRelationship = {
+  __typename?: 'ChannelPinnedWikiPagesRelationship';
+  cursor: Scalars['String']['output'];
+  node: WikiPage;
+};
+
+export type ChannelPinnedWikiPagesRelationshipSubscriptionWhere = {
+  node?: InputMaybe<WikiPageSubscriptionWhere>;
+};
+
+export type ChannelPinnedWikiPagesUpdateConnectionInput = {
+  node?: InputMaybe<WikiPageUpdateInput>;
+};
+
+export type ChannelPinnedWikiPagesUpdateFieldInput = {
+  connect?: InputMaybe<Array<ChannelPinnedWikiPagesConnectFieldInput>>;
+  create?: InputMaybe<Array<ChannelPinnedWikiPagesCreateFieldInput>>;
+  delete?: InputMaybe<Array<ChannelPinnedWikiPagesDeleteFieldInput>>;
+  disconnect?: InputMaybe<Array<ChannelPinnedWikiPagesDisconnectFieldInput>>;
+  update?: InputMaybe<ChannelPinnedWikiPagesUpdateConnectionInput>;
+  where?: InputMaybe<ChannelPinnedWikiPagesConnectionWhere>;
+};
+
 /**
  * The edge properties for the following fields:
  * * Channel.EnabledPlugins
@@ -5169,6 +5549,8 @@ export type ChannelRelationInput = {
   Moderators?: InputMaybe<Array<ChannelModeratorsCreateFieldInput>>;
   PendingModInvites?: InputMaybe<Array<ChannelPendingModInvitesCreateFieldInput>>;
   PendingOwnerInvites?: InputMaybe<Array<ChannelPendingOwnerInvitesCreateFieldInput>>;
+  PinnedDiscussionChannels?: InputMaybe<Array<ChannelPinnedDiscussionChannelsCreateFieldInput>>;
+  PinnedWikiPages?: InputMaybe<Array<ChannelPinnedWikiPagesCreateFieldInput>>;
   RelatedChannels?: InputMaybe<Array<ChannelRelatedChannelsCreateFieldInput>>;
   SuspendedModRole?: InputMaybe<ChannelSuspendedModRoleCreateFieldInput>;
   SuspendedMods?: InputMaybe<Array<ChannelSuspendedModsCreateFieldInput>>;
@@ -5227,6 +5609,8 @@ export type ChannelRelationshipsSubscriptionWhere = {
   Moderators?: InputMaybe<ChannelModeratorsRelationshipSubscriptionWhere>;
   PendingModInvites?: InputMaybe<ChannelPendingModInvitesRelationshipSubscriptionWhere>;
   PendingOwnerInvites?: InputMaybe<ChannelPendingOwnerInvitesRelationshipSubscriptionWhere>;
+  PinnedDiscussionChannels?: InputMaybe<ChannelPinnedDiscussionChannelsRelationshipSubscriptionWhere>;
+  PinnedWikiPages?: InputMaybe<ChannelPinnedWikiPagesRelationshipSubscriptionWhere>;
   RelatedChannels?: InputMaybe<ChannelRelatedChannelsRelationshipSubscriptionWhere>;
   SuspendedModRole?: InputMaybe<ChannelSuspendedModRoleRelationshipSubscriptionWhere>;
   SuspendedMods?: InputMaybe<ChannelSuspendedModsRelationshipSubscriptionWhere>;
@@ -6315,6 +6699,8 @@ export type ChannelUpdateInput = {
   Moderators?: InputMaybe<Array<ChannelModeratorsUpdateFieldInput>>;
   PendingModInvites?: InputMaybe<Array<ChannelPendingModInvitesUpdateFieldInput>>;
   PendingOwnerInvites?: InputMaybe<Array<ChannelPendingOwnerInvitesUpdateFieldInput>>;
+  PinnedDiscussionChannels?: InputMaybe<Array<ChannelPinnedDiscussionChannelsUpdateFieldInput>>;
+  PinnedWikiPages?: InputMaybe<Array<ChannelPinnedWikiPagesUpdateFieldInput>>;
   RelatedChannels?: InputMaybe<Array<ChannelRelatedChannelsUpdateFieldInput>>;
   SuspendedModRole?: InputMaybe<ChannelSuspendedModRoleUpdateFieldInput>;
   SuspendedMods?: InputMaybe<Array<ChannelSuspendedModsUpdateFieldInput>>;
@@ -6637,6 +7023,40 @@ export type ChannelWhere = {
   PendingOwnerInvites_SINGLE?: InputMaybe<UserWhere>;
   /** Return Channels where some of the related Users match this filter */
   PendingOwnerInvites_SOME?: InputMaybe<UserWhere>;
+  PinnedDiscussionChannelsAggregate?: InputMaybe<ChannelPinnedDiscussionChannelsAggregateInput>;
+  /** Return Channels where all of the related ChannelPinnedDiscussionChannelsConnections match this filter */
+  PinnedDiscussionChannelsConnection_ALL?: InputMaybe<ChannelPinnedDiscussionChannelsConnectionWhere>;
+  /** Return Channels where none of the related ChannelPinnedDiscussionChannelsConnections match this filter */
+  PinnedDiscussionChannelsConnection_NONE?: InputMaybe<ChannelPinnedDiscussionChannelsConnectionWhere>;
+  /** Return Channels where one of the related ChannelPinnedDiscussionChannelsConnections match this filter */
+  PinnedDiscussionChannelsConnection_SINGLE?: InputMaybe<ChannelPinnedDiscussionChannelsConnectionWhere>;
+  /** Return Channels where some of the related ChannelPinnedDiscussionChannelsConnections match this filter */
+  PinnedDiscussionChannelsConnection_SOME?: InputMaybe<ChannelPinnedDiscussionChannelsConnectionWhere>;
+  /** Return Channels where all of the related DiscussionChannels match this filter */
+  PinnedDiscussionChannels_ALL?: InputMaybe<DiscussionChannelWhere>;
+  /** Return Channels where none of the related DiscussionChannels match this filter */
+  PinnedDiscussionChannels_NONE?: InputMaybe<DiscussionChannelWhere>;
+  /** Return Channels where one of the related DiscussionChannels match this filter */
+  PinnedDiscussionChannels_SINGLE?: InputMaybe<DiscussionChannelWhere>;
+  /** Return Channels where some of the related DiscussionChannels match this filter */
+  PinnedDiscussionChannels_SOME?: InputMaybe<DiscussionChannelWhere>;
+  PinnedWikiPagesAggregate?: InputMaybe<ChannelPinnedWikiPagesAggregateInput>;
+  /** Return Channels where all of the related ChannelPinnedWikiPagesConnections match this filter */
+  PinnedWikiPagesConnection_ALL?: InputMaybe<ChannelPinnedWikiPagesConnectionWhere>;
+  /** Return Channels where none of the related ChannelPinnedWikiPagesConnections match this filter */
+  PinnedWikiPagesConnection_NONE?: InputMaybe<ChannelPinnedWikiPagesConnectionWhere>;
+  /** Return Channels where one of the related ChannelPinnedWikiPagesConnections match this filter */
+  PinnedWikiPagesConnection_SINGLE?: InputMaybe<ChannelPinnedWikiPagesConnectionWhere>;
+  /** Return Channels where some of the related ChannelPinnedWikiPagesConnections match this filter */
+  PinnedWikiPagesConnection_SOME?: InputMaybe<ChannelPinnedWikiPagesConnectionWhere>;
+  /** Return Channels where all of the related WikiPages match this filter */
+  PinnedWikiPages_ALL?: InputMaybe<WikiPageWhere>;
+  /** Return Channels where none of the related WikiPages match this filter */
+  PinnedWikiPages_NONE?: InputMaybe<WikiPageWhere>;
+  /** Return Channels where one of the related WikiPages match this filter */
+  PinnedWikiPages_SINGLE?: InputMaybe<WikiPageWhere>;
+  /** Return Channels where some of the related WikiPages match this filter */
+  PinnedWikiPages_SOME?: InputMaybe<WikiPageWhere>;
   RelatedChannelsAggregate?: InputMaybe<ChannelRelatedChannelsAggregateInput>;
   /** Return Channels where all of the related ChannelRelatedChannelsConnections match this filter */
   RelatedChannelsConnection_ALL?: InputMaybe<ChannelRelatedChannelsConnectionWhere>;
@@ -6950,6 +7370,23 @@ export type ChannelWikiHomePageUpdateFieldInput = {
   disconnect?: InputMaybe<ChannelWikiHomePageDisconnectFieldInput>;
   update?: InputMaybe<ChannelWikiHomePageUpdateConnectionInput>;
   where?: InputMaybe<ChannelWikiHomePageConnectionWhere>;
+};
+
+export type ChannelWikiPagePinnedWikiPagesAggregationSelection = {
+  __typename?: 'ChannelWikiPagePinnedWikiPagesAggregationSelection';
+  count: Scalars['Int']['output'];
+  node?: Maybe<ChannelWikiPagePinnedWikiPagesNodeAggregateSelection>;
+};
+
+export type ChannelWikiPagePinnedWikiPagesNodeAggregateSelection = {
+  __typename?: 'ChannelWikiPagePinnedWikiPagesNodeAggregateSelection';
+  body: StringAggregateSelection;
+  channelUniqueName: StringAggregateSelection;
+  createdAt: DateTimeAggregateSelection;
+  id: IdAggregateSelection;
+  slug: StringAggregateSelection;
+  title: StringAggregateSelection;
+  updatedAt: DateTimeAggregateSelection;
 };
 
 export type ChannelWikiPageWikiHomePageAggregationSelection = {
