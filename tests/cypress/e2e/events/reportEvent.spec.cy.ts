@@ -14,14 +14,13 @@ describe('Report event', () => {
     // Set up network interception for GraphQL requests
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
-    // Login as the second user who is not the author of the event
-    cy.loginWithCreateEventButton({
-      username: username,
-      password: password,
-    });
-
-    // Visit the forum's events tab and open the target event
+    // Visit the forum's events tab and authenticate as the second user
     cy.visit(CATS_FORUM_EVENTS);
+    cy.authenticateAsUserOnCurrentPage({
+      username,
+      password,
+      displayName: 'testuser2',
+    });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     // Wait for list to be visible and click the event
@@ -74,6 +73,9 @@ describe('Report event', () => {
 
     // Now navigate to the channel's open issues tab
     cy.visit(`${CHANNEL_ISSUES}`);
+    cy.syncAuthState({
+      username: 'testuser2',
+    });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     // Verify that the issue appears in the list of open issues

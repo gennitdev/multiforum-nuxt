@@ -16,12 +16,11 @@ describe('Give feedback on a discussion', () => {
 
     // For the feedback buttons to be visible we need to be logged in as
     // someone who did not create the event.
-    cy.loginWithCreateEventButton({
+    cy.visit(CATS_FORUM);
+    cy.authenticateAsUserOnCurrentPage({
       username: username2,
       password: password2,
     });
-
-    cy.visit(CATS_FORUM);
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     cy.get('span').contains(targetDiscussionTitle).click();
@@ -105,6 +104,7 @@ describe('Give feedback on a discussion', () => {
     // Get the copied link from clipboard and visit it
     cy.getClipboardText().then((text) => {
       cy.visit(text);
+      cy.syncAuthState({ username: username2 });
       cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
       cy.get('p').contains(EDITED_FEEDBACK).should('exist');
       cy.get('span').contains('Permalinked').should('exist');

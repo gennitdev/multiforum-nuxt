@@ -14,14 +14,12 @@ describe('Report discussion', () => {
     // Set up network interception for GraphQL requests
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
-    // Login as the second user who is not the author of the discussion
-    cy.loginWithCreateEventButton({
-      username: username,
-      password: password,
-    });
-
     // Visit the forum and open the target discussion
     cy.visit(CATS_FORUM);
+    cy.authenticateAsUserOnCurrentPage({
+      username,
+      password,
+    });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     cy.get('span').contains(targetDiscussionTitle).click();
@@ -59,6 +57,7 @@ describe('Report discussion', () => {
 
     // Now navigate to the admin dashboard's issues tab
     cy.visit(ADMIN_ISSUES);
+    cy.syncAuthState({ username });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     // Verify that the issue appears in the list
@@ -76,14 +75,12 @@ describe('Report discussion', () => {
     // Set up network interception for GraphQL requests
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
-    // Login as the second user who is not the author of the discussion
-    cy.loginWithCreateEventButton({
-      username: username,
-      password: password,
-    });
-
     // Visit the forum and open the target discussion
     cy.visit(CATS_FORUM);
+    cy.authenticateAsUserOnCurrentPage({
+      username,
+      password,
+    });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     cy.get('span').contains(targetDiscussionTitle).click();
@@ -119,8 +116,9 @@ describe('Report discussion', () => {
     // Verify the success notification appears
     cy.contains('Your report was submitted successfully').should('be.visible');
 
-    // Now navigate to the admin dashboard's issues tab
+    // Now navigate to the channel's issues tab
     cy.visit(CHANNEL_ISSUES);
+    cy.syncAuthState({ username });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     // Verify that the issue appears in the list

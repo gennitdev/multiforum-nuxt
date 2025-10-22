@@ -13,16 +13,15 @@ describe('Basic discussion operations', () => {
     // Set up network interception for GraphQL requests
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
-    cy.loginWithCreateEventButton({
-      username: username2,
-      password: password2,
-    });
-
     const TEST_DISCUSSION = 'Test discussion voting';
     const TEST_CHANNEL = 'cats';
 
-    // Test creating a discussion.
+    // Test creating a discussion as user 2
     cy.visit(DISCUSSION_CREATION_FORM);
+    cy.authenticateAsUserOnCurrentPage({
+      username: username2,
+      password: password2,
+    });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     // Add title
@@ -86,11 +85,6 @@ describe('Basic discussion operations', () => {
     // Set up network interception for GraphQL requests
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
-    cy.loginWithCreateEventButton({
-      username: username2,
-      password: password2,
-    });
-
     // Intercept the upvote mutation specifically
     cy.intercept('POST', '**/graphql', (req) => {
       if (
@@ -104,6 +98,10 @@ describe('Basic discussion operations', () => {
     // VOTING ON SOMEONE ELSE'S DISCUSSION
     // Go to the cats forum
     cy.visit(CATS_FORUM);
+    cy.authenticateAsUserOnCurrentPage({
+      username: username2,
+      password: password2,
+    });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     // Use "Example topic 1," which comes from the test data and

@@ -14,14 +14,12 @@ describe('Archive and unarchive discussion from issues page', () => {
     // Set up network interception for GraphQL requests
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
-    // Login as the moderator
-    cy.loginWithCreateEventButton({
-      username: username,
-      password: password,
-    });
-
     // Visit the forum and open the target discussion
     cy.visit(CATS_FORUM);
+    cy.authenticateAsUserOnCurrentPage({
+      username,
+      password,
+    });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     cy.get('span').contains(targetDiscussionTitle).click();
@@ -65,6 +63,7 @@ describe('Archive and unarchive discussion from issues page', () => {
 
     // Navigate to the channel issues tab
     cy.visit(CHANNEL_ISSUES);
+    cy.syncAuthState({ username });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     // Verify the issue appears in the list
@@ -138,6 +137,7 @@ describe('Archive and unarchive discussion from issues page', () => {
 
     // Navigate back to the forum discussions page
     cy.visit(CATS_FORUM);
+    cy.syncAuthState({ username });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     // Verify the archived discussion is not visible in the list
@@ -145,6 +145,7 @@ describe('Archive and unarchive discussion from issues page', () => {
 
     // Navigate to closed issues to verify it appears there
     cy.visit(`${CHANNEL_ISSUES}/closed`);
+    cy.syncAuthState({ username });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     // Verify the issue appears in closed issues
@@ -161,14 +162,12 @@ describe('Archive and unarchive discussion from issues page', () => {
     // Set up network interception for GraphQL requests
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
-    // Login as the moderator
-    cy.loginWithCreateEventButton({
-      username: username,
-      password: password,
-    });
-
-    // Navigate to closed issues
+    // Navigate to closed issues as the moderator
     cy.visit(`${CHANNEL_ISSUES}/closed`);
+    cy.authenticateAsUserOnCurrentPage({
+      username,
+      password,
+    });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     // Verify the issue appears in the list and click on it
@@ -223,6 +222,7 @@ describe('Archive and unarchive discussion from issues page', () => {
 
     // Navigate back to the forum discussions page
     cy.visit(CATS_FORUM);
+    cy.syncAuthState({ username });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     // Verify the discussion is now visible in the list

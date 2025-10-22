@@ -18,14 +18,12 @@ describe('Feedback moderation link verification', () => {
     // Set up network interception
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
-    // Login as moderator
-    cy.loginWithCreateEventButton({
+    // Navigate to a discussion
+    cy.visit(CATS_FORUM);
+    cy.authenticateAsUserOnCurrentPage({
       username: modUsername,
       password: modPassword,
     });
-
-    // Navigate to a discussion
-    cy.visit(CATS_FORUM);
     cy.wait('@graphqlRequest');
 
     cy.contains(discussionTitle).click();
@@ -75,6 +73,7 @@ describe('Feedback moderation link verification', () => {
 
       // Navigate to issues
       cy.visit(`${CATS_FORUM.replace('discussions', 'issues')}`);
+      cy.syncAuthState({ username: modUsername });
       cy.wait('@graphqlRequest');
 
       // Find and open issue for feedback
@@ -103,6 +102,7 @@ describe('Feedback moderation link verification', () => {
 
           // Go back to issue to test archive flow
           cy.visit(issueUrl);
+          cy.syncAuthState({ username: modUsername });
           cy.wait('@graphqlRequest');
 
           // Archive the feedback
@@ -117,6 +117,7 @@ describe('Feedback moderation link verification', () => {
 
           // Go to permalink to verify archived state
           cy.visit(feedbackPermalinkUrl);
+          cy.syncAuthState({ username: modUsername });
           cy.wait('@graphqlRequest');
 
           // Verify feedback shows as archived
@@ -139,6 +140,7 @@ describe('Feedback moderation link verification', () => {
 
           // Go back to permalink to verify unarchived state
           cy.visit(feedbackPermalinkUrl);
+          cy.syncAuthState({ username: modUsername });
           cy.wait('@graphqlRequest');
 
           // Verify feedback no longer shows as archived
@@ -165,14 +167,12 @@ describe('Feedback moderation link verification', () => {
     // Set up network interception
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
-    // Login as standard user
-    cy.loginWithCreateEventButton({
-      username: username,
-      password: password,
-    });
-
-    // Navigate to a discussion
+    // Navigate to a discussion as the standard user
     cy.visit(CATS_FORUM);
+    cy.authenticateAsUserOnCurrentPage({
+      username,
+      password,
+    });
     cy.wait('@graphqlRequest');
 
     cy.contains(discussionTitle).click();
@@ -186,16 +186,14 @@ describe('Feedback moderation link verification', () => {
     cy.wait('@graphqlRequest');
 
     // Switch to moderator to give and report feedback
-    cy.get('[data-testid="logout-button"]').click();
-    cy.wait(2000);
-
-    cy.loginWithCreateEventButton({
+    cy.authenticateAsUserOnCurrentPage({
       username: modUsername,
       password: modPassword,
     });
 
     // Navigate back to discussion
     cy.visit(CATS_FORUM);
+    cy.syncAuthState({ username });
     cy.wait('@graphqlRequest');
 
     cy.contains(discussionTitle).click();
@@ -216,16 +214,14 @@ describe('Feedback moderation link verification', () => {
     cy.wait('@graphqlRequest');
 
     // Make this user (username_1) give feedback to create content we'll suspend them for
-    cy.get('[data-testid="logout-button"]').click();
-    cy.wait(2000);
-
-    cy.loginWithCreateEventButton({
-      username: username,
-      password: password,
+    cy.authenticateAsUserOnCurrentPage({
+      username,
+      password,
     });
 
     // Navigate back to discussion
     cy.visit(CATS_FORUM);
+    cy.syncAuthState({ username });
     cy.wait('@graphqlRequest');
 
     cy.contains(discussionTitle).click();
@@ -250,16 +246,14 @@ describe('Feedback moderation link verification', () => {
     cy.wait('@graphqlRequest');
 
     // Switch back to moderator
-    cy.get('[data-testid="logout-button"]').click();
-    cy.wait(2000);
-
-    cy.loginWithCreateEventButton({
+    cy.authenticateAsUserOnCurrentPage({
       username: modUsername,
       password: modPassword,
     });
 
     // Navigate back to discussion feedback
     cy.visit(CATS_FORUM);
+    cy.syncAuthState({ username: modUsername });
     cy.wait('@graphqlRequest');
 
     cy.contains(discussionTitle).click();
@@ -295,7 +289,9 @@ describe('Feedback moderation link verification', () => {
 
     // Navigate to suspended users
     cy.visit(`${CATS_FORUM.replace('discussions', 'edit/suspended-users')}`);
+    cy.syncAuthState({ username: modUsername });
     cy.wait('@graphqlRequest');
+
 
     // Verify user was suspended
     cy.contains(username).should('be.visible');
@@ -321,7 +317,9 @@ describe('Feedback moderation link verification', () => {
 
     // Check suspended users page to verify user was unsuspended
     cy.visit(`${CATS_FORUM.replace('discussions', 'edit/suspended-users')}`);
+    cy.syncAuthState({ username: modUsername });
     cy.wait('@graphqlRequest');
+
 
     // Verify user is no longer suspended
     cy.contains(username).should('not.exist');

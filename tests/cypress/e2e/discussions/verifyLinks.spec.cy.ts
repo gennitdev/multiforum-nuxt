@@ -19,14 +19,12 @@ describe('Discussion moderation link verification', () => {
     // Set up network interception
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
-    // Login as regular user to create discussion
-    cy.loginWithCreateEventButton({
-      username: username,
-      password: password,
-    });
-
     // Create a test discussion
     cy.visit(DISCUSSION_CREATION_FORM);
+    cy.authenticateAsUserOnCurrentPage({
+      username,
+      password,
+    });
     cy.wait('@graphqlRequest');
 
     cy.get('[data-testid="title-input"]').type(discussionTitle);
@@ -44,16 +42,14 @@ describe('Discussion moderation link verification', () => {
     // Store the discussion URL
     cy.url().then((originalDiscussionUrl) => {
       // Switch to moderator account
-      cy.get('[data-testid="logout-button"]').click();
-      cy.wait(2000);
-
-      cy.loginWithCreateEventButton({
+      cy.authenticateAsUserOnCurrentPage({
         username: modUsername,
         password: modPassword,
       });
 
       // Navigate to the discussion
       cy.visit(originalDiscussionUrl);
+      cy.syncAuthState({ username: modUsername });
       cy.wait('@graphqlRequest');
 
       // Open the action menu
@@ -95,6 +91,7 @@ describe('Discussion moderation link verification', () => {
       cy.url().then((issueUrl) => {
         // Find link back to original discussion
         cy.get('#original-post-container').contains(discussionTitle).click();
+        cy.syncAuthState({ username: modUsername });
         cy.wait('@graphqlRequest');
 
         // Verify we returned to the original discussion
@@ -105,6 +102,7 @@ describe('Discussion moderation link verification', () => {
 
         // Return to issue
         cy.visit(issueUrl);
+        cy.syncAuthState({ username: modUsername });
         cy.wait('@graphqlRequest');
 
         // Unarchive from issue
@@ -116,6 +114,7 @@ describe('Discussion moderation link verification', () => {
 
         // Navigate back to discussion
         cy.get('#original-post-container').contains(discussionTitle).click();
+        cy.syncAuthState({ username: modUsername });
         cy.wait('@graphqlRequest');
 
         // Verify discussion is no longer archived
@@ -141,14 +140,12 @@ describe('Discussion moderation link verification', () => {
     // Set up network interception
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
-    // Login as regular user to create discussion
-    cy.loginWithCreateEventButton({
-      username: username,
-      password: password,
-    });
-
     // Create a test discussion
     cy.visit(DISCUSSION_CREATION_FORM);
+    cy.authenticateAsUserOnCurrentPage({
+      username,
+      password,
+    });
     cy.wait('@graphqlRequest');
 
     cy.get('[data-testid="title-input"]').type(discussionTitle);
@@ -166,16 +163,14 @@ describe('Discussion moderation link verification', () => {
     // Store the discussion URL
     cy.url().then((originalDiscussionUrl) => {
       // Switch to moderator account
-      cy.get('[data-testid="logout-button"]').click();
-      cy.wait(2000);
-
-      cy.loginWithCreateEventButton({
+      cy.authenticateAsUserOnCurrentPage({
         username: modUsername,
         password: modPassword,
       });
 
       // Navigate to the discussion
       cy.visit(originalDiscussionUrl);
+      cy.syncAuthState({ username: modUsername });
       cy.wait('@graphqlRequest');
 
       // Open the action menu
@@ -221,6 +216,7 @@ describe('Discussion moderation link verification', () => {
 
       // Navigate to issues page
       cy.visit(`${CATS_FORUM.replace('discussions', 'issues')}`);
+      cy.syncAuthState({ username: modUsername });
       cy.wait('@graphqlRequest');
 
       // Find and click on the issue for our feedback
@@ -248,6 +244,7 @@ describe('Discussion moderation link verification', () => {
 
         // Clean up: Go back to issue and archive the feedback
         cy.visit(issueUrl);
+        cy.syncAuthState({ username: modUsername });
         cy.wait('@graphqlRequest');
 
         cy.contains('Archive').click();

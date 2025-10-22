@@ -149,7 +149,7 @@ describe('Feature workflow', () => {
   setupTestData();
 
   // Authenticate before each test
-  loginUser('loginWithCreateEventButton');
+  loginUser('loginProgrammatically');
 
   it('completes a user workflow successfully', () => {
     // Set up request interception for GraphQL calls
@@ -157,6 +157,7 @@ describe('Feature workflow', () => {
 
     // Navigate to the starting point
     cy.visit('/forums/cats');
+    cy.syncAuthState();
 
     // Interact with the UI
     cy.get('[data-testid="create-discussion-button"]').click();
@@ -253,7 +254,7 @@ import { DISCUSSION_CREATION_FORM } from '../constants';
 
 describe('Discussion CRUD operations', () => {
   setupTestData();
-  loginUser('loginWithCreateEventButton');
+  loginUser('loginProgrammatically');
 
   it('creates, edits, and deletes a discussion', () => {
     // Set up GraphQL interception

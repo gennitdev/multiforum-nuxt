@@ -15,14 +15,12 @@ describe('Archive and unarchive discussion', () => {
     // Set up network interception for GraphQL requests
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
-    // Login as the second user who is a moderator
-    cy.loginWithCreateEventButton({
-      username: username,
-      password: password,
-    });
-
     // Visit the forum and open the target discussion
     cy.visit(CATS_FORUM);
+    cy.authenticateAsUserOnCurrentPage({
+      username,
+      password,
+    });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     cy.get('span').contains(targetDiscussionTitle).click();
@@ -68,6 +66,7 @@ describe('Archive and unarchive discussion', () => {
 
     // Now navigate to the channel's closed issues tab
     cy.visit(`${CHANNEL_ISSUES}/closed`);
+    cy.syncAuthState({ username });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     // Verify that the issue appears in the list of closed issues
@@ -77,6 +76,7 @@ describe('Archive and unarchive discussion', () => {
 
     // Visit the forum and open the target discussion
     cy.visit(CATS_FORUM);
+    cy.syncAuthState({ username });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     // archived discussion is no longer visible in the open discussions
@@ -91,14 +91,12 @@ describe('Archive and unarchive discussion', () => {
     // Set up network interception for GraphQL requests
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
-    // Login as the moderator
-    cy.loginWithCreateEventButton({
-      username: username,
-      password: password,
-    });
-
     // Navigate to the closed issues tab to find the archived discussion
     cy.visit(`${CHANNEL_ISSUES}/closed`);
+    cy.authenticateAsUserOnCurrentPage({
+      username,
+      password,
+    });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     // First click on the issue to navigate to the issue detail page
@@ -143,6 +141,7 @@ describe('Archive and unarchive discussion', () => {
 
     // Visit the forum and open the target discussion
     cy.visit(CATS_FORUM);
+    cy.syncAuthState({ username });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     cy.get('span').contains(targetDiscussionTitle).should('be.visible');

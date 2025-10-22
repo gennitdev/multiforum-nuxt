@@ -29,14 +29,12 @@ describe('Event moderation link verification', () => {
     // Set up network interception
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
-    // Login as regular user to create event
-    cy.loginWithCreateEventButton({
-      username: username,
-      password: password,
-    });
-
-    // Create a test event
+    // Create a test event as the regular user
     cy.visit(EVENT_CREATION_FORM);
+    cy.authenticateAsUserOnCurrentPage({
+      username,
+      password,
+    });
     cy.wait('@graphqlRequest');
 
     // Fill in event form
@@ -74,16 +72,14 @@ describe('Event moderation link verification', () => {
     // Store the event URL
     cy.url().then((originalEventUrl) => {
       // Switch to moderator account
-      cy.get('[data-testid="logout-button"]').click();
-      cy.wait(2000);
-
-      cy.loginWithCreateEventButton({
+      cy.authenticateAsUserOnCurrentPage({
         username: modUsername,
         password: modPassword,
       });
 
       // Navigate to the event
       cy.visit(originalEventUrl);
+      cy.syncAuthState({ username: modUsername });
       cy.wait('@graphqlRequest');
 
       // Open the action menu
@@ -125,6 +121,7 @@ describe('Event moderation link verification', () => {
       cy.url().then((issueUrl) => {
         // Find link back to original event
         cy.get('#original-post-container').contains(eventTitle).click();
+        cy.syncAuthState({ username: modUsername });
         cy.wait('@graphqlRequest');
 
         // Verify we returned to the original event
@@ -133,6 +130,7 @@ describe('Event moderation link verification', () => {
 
         // Return to issue
         cy.visit(issueUrl);
+        cy.syncAuthState({ username: modUsername });
         cy.wait('@graphqlRequest');
 
         // Unarchive from issue
@@ -143,7 +141,8 @@ describe('Event moderation link verification', () => {
         cy.wait('@graphqlRequest');
 
         // Navigate back to event
-        cy.get('#original-post-container').contains(eventTitle).click();
+       cy.get('#original-post-container').contains(eventTitle).click();
+        cy.syncAuthState({ username: modUsername });
         cy.wait('@graphqlRequest');
 
         // Verify event is no longer archived
@@ -176,14 +175,12 @@ describe('Event moderation link verification', () => {
     // Set up network interception
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
-    // Login as regular user to create event
-    cy.loginWithCreateEventButton({
-      username: username,
-      password: password,
-    });
-
-    // Create a test event
+    // Create a test event as the regular user
     cy.visit(EVENT_CREATION_FORM);
+    cy.authenticateAsUserOnCurrentPage({
+      username,
+      password,
+    });
     cy.wait('@graphqlRequest');
 
     // Fill in event form
@@ -221,16 +218,14 @@ describe('Event moderation link verification', () => {
     // Store the event URL
     cy.url().then((originalEventUrl) => {
       // Switch to moderator account
-      cy.get('[data-testid="logout-button"]').click();
-      cy.wait(2000);
-
-      cy.loginWithCreateEventButton({
+      cy.authenticateAsUserOnCurrentPage({
         username: modUsername,
         password: modPassword,
       });
 
       // Navigate to the event
       cy.visit(originalEventUrl);
+      cy.syncAuthState({ username: modUsername });
       cy.wait('@graphqlRequest');
 
       // Open the action menu
@@ -274,6 +269,7 @@ describe('Event moderation link verification', () => {
 
       // Navigate to issues page
       cy.visit(`${CATS_FORUM_EVENTS.replace('events', 'issues')}`);
+      cy.syncAuthState({ username: modUsername });
       cy.wait('@graphqlRequest');
 
       // Find and click on the issue for our feedback
@@ -301,6 +297,7 @@ describe('Event moderation link verification', () => {
 
         // Clean up: Go back to issue and archive the feedback
         cy.visit(issueUrl);
+        cy.syncAuthState({ username: modUsername });
         cy.wait('@graphqlRequest');
 
         cy.contains('Archive').click();

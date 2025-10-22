@@ -32,12 +32,11 @@ describe('Give feedback on an event', () => {
 
     // For the feedback buttons to be visible we need to be logged in as
     // someone who did not create the event.
-    cy.loginWithCreateEventButton({
+    cy.visit(CATS_FORUM_EVENTS);
+    cy.authenticateAsUserOnCurrentPage({
       username: username2,
       password: password2,
     });
-
-    cy.visit(CATS_FORUM_EVENTS);
     // Wait for events to load
     cy.wait('@getEventsRequest').its('response.statusCode').should('eq', 200);
 
@@ -146,6 +145,7 @@ describe('Give feedback on an event', () => {
     // Get the copied link from clipboard and visit it
     cy.getClipboardText().then((text) => {
       cy.visit(text);
+      cy.syncAuthState({ username: username2 });
 
       // Wait for comments to load on permalink page
       cy.wait('@getCommentsRequest')

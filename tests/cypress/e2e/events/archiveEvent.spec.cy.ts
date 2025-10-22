@@ -15,14 +15,13 @@ describe('Archive and unarchive event', () => {
     // Set up network interception for GraphQL requests
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
-    // Login as the second user who is a moderator
-    cy.loginWithCreateEventButton({
-      username: username,
-      password: password,
-    });
-
-    // Visit the forum's events tab and open the target event
+    // Visit the forum's events tab and authenticate as the moderator
     cy.visit(CATS_FORUM_EVENTS);
+    cy.authenticateAsUserOnCurrentPage({
+      username,
+      password,
+      displayName: 'testuser2',
+    });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     // Wait for list to be visible and click the event
@@ -77,6 +76,7 @@ describe('Archive and unarchive event', () => {
 
     // Now navigate to the channel's closed issues tab
     cy.visit(`${CHANNEL_ISSUES}/closed`);
+    cy.syncAuthState({ username: 'testuser2' });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     // Verify that the issue appears in the list of closed issues
@@ -86,6 +86,7 @@ describe('Archive and unarchive event', () => {
 
     // Visit the forum's events tab again
     cy.visit(`${CATS_FORUM_EVENTS}`);
+    cy.syncAuthState({ username: 'testuser2' });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     // Archived event is no longer visible in the open events list
@@ -100,14 +101,13 @@ describe('Archive and unarchive event', () => {
     // Set up network interception for GraphQL requests
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
-    // Login as the moderator
-    cy.loginWithCreateEventButton({
-      username: username,
-      password: password,
-    });
-
-    // Navigate to the closed issues tab to find the archived event
+    // Navigate to the closed issues tab and authenticate as the moderator
     cy.visit(`${CHANNEL_ISSUES}/closed`);
+    cy.authenticateAsUserOnCurrentPage({
+      username,
+      password,
+      displayName: 'testuser2',
+    });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     // First click on the issue to navigate to the issue detail page
@@ -153,6 +153,7 @@ describe('Archive and unarchive event', () => {
 
     // Visit the forum's events tab again
     cy.visit(`${CATS_FORUM_EVENTS}`);
+    cy.syncAuthState({ username: 'testuser2' });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     // Wait for event list to be visible

@@ -21,13 +21,11 @@ describe('Suspend and unsuspend discussion author', () => {
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
     // Step 1: Login as the author (username_1) to create a discussion
-    cy.loginWithCreateEventButton({
+    cy.visit(CATS_FORUM);
+    cy.authenticateAsUserOnCurrentPage({
       username: authorUsername,
       password: authorPassword,
     });
-
-    // Navigate to the cats forum
-    cy.visit(CATS_FORUM);
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     // Create a new discussion
@@ -51,18 +49,15 @@ describe('Suspend and unsuspend discussion author', () => {
     // Verify the discussion was created successfully
     cy.contains(testDiscussionTitle).should('be.visible');
 
-    // Log out first user
-    cy.visit('/logout');
-    cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
-
-    // Step 2: Login as the moderator (username_2)
-    cy.loginWithCreateEventButton({
+    // Step 2: Switch to the moderator (username_2)
+    cy.authenticateAsUserOnCurrentPage({
       username: modUsername,
       password: modPassword,
     });
 
     // Navigate to the cats forum
     cy.visit(CATS_FORUM);
+    cy.syncAuthState({ username: modUsername });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     // Find and click on the created discussion
@@ -110,6 +105,7 @@ describe('Suspend and unsuspend discussion author', () => {
 
     // Step 3: Navigate to the forum's suspended users section
     cy.visit(`${CATS_FORUM.replace('discussions', 'edit/suspended-users')}`);
+    cy.syncAuthState({ username: modUsername });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     // Verify the author was suspended
@@ -140,6 +136,7 @@ describe('Suspend and unsuspend discussion author', () => {
 
     // Step 5: Go back to the suspended users page to verify user was removed
     cy.visit(`${CATS_FORUM.replace('discussions', 'edit/suspended-users')}`);
+    cy.syncAuthState({ username: modUsername });
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
     // Verify the author is no longer in the suspended users list
