@@ -15,9 +15,11 @@ describe('Filter discussions by tag', () => {
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
     cy.visit(DISCUSSION_LIST);
-    cy.syncAuthState();
-    // Wait for initial data load instead of arbitrary timeout
-    cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
+    cy.syncAuthState({
+      waitForSelector: 'button[data-testid="discussion-filter-button"]',
+    });
+
+    cy.wait('@graphqlRequest');
 
     cy.get('button[data-testid="discussion-filter-button"]').click(); // open the filter menu
     cy.get('button[data-testid="tag-filter-button"]').click(); // open the tag picker
@@ -63,9 +65,11 @@ describe('Filter discussions by tag', () => {
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
     cy.visit(CHANNEL_VIEW);
-    cy.syncAuthState();
-    // Wait for initial data load instead of arbitrary timeout
-    cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
+    cy.syncAuthState({
+      waitForSelector: 'button[data-testid="discussion-filter-button"]',
+    });
+
+    cy.wait('@graphqlRequest');
 
     cy.get('button[data-testid="discussion-filter-button"]').click(); // open the filter menu
     cy.get('button[data-testid="tag-filter-button"]').click(); // open the tag picker
