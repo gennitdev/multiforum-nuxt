@@ -6,7 +6,7 @@ describe('Basic event operations', () => {
   // Set up test data once for all tests in this file
   setupTestData();
   // Login before each test
-  loginUser('loginWithCreateEventButton');
+  loginUser('loginProgrammatically');
 
   it('creates, edits and deletes an online event with virtual event type', () => {
     // Helper function to format dates for input fields
@@ -40,6 +40,7 @@ describe('Basic event operations', () => {
 
     // Test creating an online event
     cy.visit(EVENT_CREATION_FORM);
+    cy.syncAuthState();
     cy.get('input[data-testid="title-input"]').type(TEST_TITLE);
 
     cy.get('div[data-testid="channel-input"]').type(`${TEST_CHANNEL}{enter}`);
@@ -174,6 +175,7 @@ describe('Basic event operations', () => {
 
     // Test creating a hybrid event
     cy.visit(EVENT_CREATION_FORM);
+    cy.syncAuthState();
     cy.get('input[data-testid="title-input"]').type(TEST_TITLE);
 
     cy.get('div[data-testid="channel-input"]').type(`${TEST_CHANNEL}{enter}`);

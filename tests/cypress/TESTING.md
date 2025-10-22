@@ -29,7 +29,7 @@ describe('Test suite', () => {
   setupTestData();
 
   // Handle login before each test
-  loginUser('loginWithCreateEventButton');
+  loginUser('loginProgrammatically');
 
   it('test case', () => {
     // Test code here...
@@ -42,7 +42,8 @@ describe('Test suite', () => {
 The `testSetup.ts` utility provides:
 
 - `setupTestData()`: Initializes test data once per test file in a `before` hook
-- `loginUser()`: Handles login for each test in a `beforeEach` hook
+- `loginUser('loginProgrammatically')`: Caches the Auth0 session with `cy.session()` and runs before each test
+- Call `cy.syncAuthState()` (or `cy.authenticateOnCurrentPage()`) after `cy.visit()` to update the Vue reactive auth state
 - State tracking to ensure data is properly initialized
 
 ### 3. Benefits
@@ -54,11 +55,10 @@ The `testSetup.ts` utility provides:
 
 ### 4. Next Steps for Further Optimization
 
-1. **Session Caching**: Implement `cy.session()` to cache Auth0 login state
-2. **Selective Data Reset**: Create focused data reset functions for specific test needs
-3. **Parallelization**: Set up test parallelization with Cypress Dashboard
-4. **Network Interception**: Replace arbitrary waits with network request watching
-5. **Custom Test Data**: Create test-specific data instead of reusing the same data
+1. **Selective Data Reset**: Create focused data reset functions for specific test needs
+2. **Parallelization**: Set up test parallelization with Cypress Dashboard
+3. **Network Interception**: Replace arbitrary waits with network request watching
+4. **Custom Test Data**: Create test-specific data instead of reusing the same data
 
 ## Usage
 
@@ -74,7 +74,8 @@ To convert an existing test file:
 
    ```js
    setupTestData();
-   loginUser('loginWithCreateEventButton');
+   loginUser('loginProgrammatically');
    ```
 
-3. Remove manual calls to `deleteAll()` and `seedAll()`
+3. After each `cy.visit()`, call `cy.syncAuthState()` (or `cy.authenticateOnCurrentPage()`) to ensure the UI shows the authenticated state. Pass `{ waitForSelector: '...' }` if the page uses a different element to indicate login (defaults to `[data-auth-state="authenticated"]`).
+4. Remove manual calls to `deleteAll()` and `seedAll()`

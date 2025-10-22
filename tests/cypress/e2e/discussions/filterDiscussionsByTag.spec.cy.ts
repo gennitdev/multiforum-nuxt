@@ -5,7 +5,7 @@ describe('Filter discussions by tag', () => {
   // Set up test data once for all tests in this file
   setupTestData();
   // Login before each test
-  loginUser('loginWithCreateEventButton');
+  loginUser('loginProgrammatically');
 
   const newYearsTagDiscussionTitle = 'Example topic 2';
   const triviaTaggedDiscussionTitle = 'Example topic 3';
@@ -15,6 +15,7 @@ describe('Filter discussions by tag', () => {
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
     cy.visit(DISCUSSION_LIST);
+    cy.syncAuthState();
     // Wait for initial data load instead of arbitrary timeout
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
@@ -62,6 +63,7 @@ describe('Filter discussions by tag', () => {
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
     cy.visit(CHANNEL_VIEW);
+    cy.syncAuthState();
     // Wait for initial data load instead of arbitrary timeout
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 

@@ -34,6 +34,21 @@ declare global {
     interface Chainable {
       loginWithCreateEventButton(input?: LoginInput): Chainable<Element>;
       loginAsAdmin(): Chainable<Element>;
+      loginProgrammatically(): Chainable<Element>;
+      syncAuthState(options?: {
+        username?: string;
+        authenticated?: boolean;
+        profilePicURL?: string;
+        modProfileName?: string;
+        waitForSelector?: string;
+      }): Chainable<Element>;
+      authenticateOnCurrentPage(options?: {
+        username?: string;
+        authenticated?: boolean;
+        profilePicURL?: string;
+        modProfileName?: string;
+        waitForSelector?: string;
+      }): Chainable<Element>;
       authenticatedGraphQL(
         query: string,
         variables?: Record<string, unknown>
@@ -44,7 +59,6 @@ declare global {
       seedDataForCypressTests(input: SeedDataInput): Chainable<Element>;
       getClipboardText: () => Chainable<string>;
       writeClipboardText: () => Chainable<void>;
-      authenticateOnCurrentPage(): Chainable<Element>;
       loginAsUser(userCredentials: {
         username: string;
         password: string;

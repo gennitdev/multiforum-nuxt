@@ -8,6 +8,10 @@ describe('Basic channel operations', () => {
   // Set up test data once for all tests in this file
   setupTestData();
 
+  beforeEach(() => {
+    cy.loginProgrammatically();
+  });
+
   it('creates and edits a channel', () => {
     const TEST_CHANNEL = 'testChannel';
     const TEST_DESCRIPTION = 'Test description';

@@ -18,8 +18,10 @@ Cypress.on('fail', (error) => {
 });
 
 const performSafetyCheck = () => {
-  // Use programmatic authentication instead of loginAsAdmin
-  cy.authenticateOnCurrentPage();
+  const baseUrl = Cypress.env('baseUrl');
+  cy.loginProgrammatically();
+  cy.visit(`${baseUrl}/discussions/`);
+  cy.syncAuthState();
   cy.authenticatedGraphQL(
     `
     query SafetyCheck {

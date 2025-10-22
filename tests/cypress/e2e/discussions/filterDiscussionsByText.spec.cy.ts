@@ -5,7 +5,7 @@ describe('Filter discussions by text', () => {
   // Set up test data once for all tests in this file
   setupTestData();
   // Login before each test
-  loginUser('loginWithCreateEventButton');
+  loginUser('loginProgrammatically');
 
   it('in the sitewide online discussions list, filters discussions by text', () => {
     const searchTerm = 'topic 1';
@@ -14,6 +14,7 @@ describe('Filter discussions by text', () => {
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
     cy.visit(DISCUSSION_LIST);
+    cy.syncAuthState();
     // Wait for initial data load instead of arbitrary timeout
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 
@@ -44,6 +45,7 @@ describe('Filter discussions by text', () => {
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
     cy.visit(CHANNEL_VIEW);
+    cy.syncAuthState();
     // Wait for initial data load instead of arbitrary timeout
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 

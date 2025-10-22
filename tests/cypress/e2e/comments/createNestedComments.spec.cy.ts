@@ -5,6 +5,10 @@ describe('Basic nested comment operations', () => {
   // Set up test data once for all tests in this file
   setupTestData();
 
+  beforeEach(() => {
+    cy.loginProgrammatically();
+  });
+
   it('creates nested comments at multiple levels', () => {
     const TEST_COMMENT_TEXT_1 = 'Test comment 1';
 

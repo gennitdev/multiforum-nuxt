@@ -8,14 +8,31 @@ declare namespace Cypress {
     loginAsAdmin(): Chainable<void>;
 
     /**
-     * Log in programmatically and sync UI state for tests
-     */
-    loginAsAdminWithUISync(): Chainable<void>;
-
-    /**
      * Log in programmatically with session caching for better performance
      */
     loginProgrammatically(): Chainable<void>;
+
+    /**
+     * Sync the application UI with the current authentication token
+     */
+    syncAuthState(authState?: {
+      username?: string;
+      authenticated?: boolean;
+      profilePicURL?: string;
+      modProfileName?: string;
+      waitForSelector?: string;
+    }): Chainable<void>;
+
+    /**
+     * Convenience helper to sync auth state on the current page
+     */
+    authenticateOnCurrentPage(authState?: {
+      username?: string;
+      authenticated?: boolean;
+      profilePicURL?: string;
+      modProfileName?: string;
+      waitForSelector?: string;
+    }): Chainable<void>;
 
     /**
      * Log in using UI button click

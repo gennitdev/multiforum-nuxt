@@ -5,8 +5,8 @@ describe('Basic discussion operations', () => {
   // Set up test data once for all tests in this file
   setupTestData();
 
-  // Use the original UI-based login method that works reliably
-  loginUser('loginWithCreateEventButton');
+  // Use the faster programmatic login with session caching
+  loginUser('loginProgrammatically');
 
   it('creates, edits and deletes a discussion', () => {
     const TEST_DISCUSSION = 'Test discussion title';
@@ -22,6 +22,7 @@ describe('Basic discussion operations', () => {
 
     // Test creating a discussion.
     cy.visit(DISCUSSION_CREATION_FORM);
+    cy.syncAuthState();
 
     // Add title
     cy.get('input[data-testid="title-input"]').type(TEST_DISCUSSION);

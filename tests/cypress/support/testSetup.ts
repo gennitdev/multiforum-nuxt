@@ -40,13 +40,11 @@ export const setupTestData = () => {
  *
  * @param loginMethod - Authentication method to use:
  *   - 'loginWithCreateEventButton' (default) - UI-based login
- *   - 'loginAsAdminWithUISync' - Programmatic login with UI state sync
- *   - 'loginProgrammatically' - Programmatic login with session caching (fastest)
+ *   - 'loginProgrammatically' - Programmatic login (preferred for speed)
  */
 export const loginUser = (
   loginMethod:
     | 'loginWithCreateEventButton'
-    | 'loginAsAdminWithUISync'
     | 'loginProgrammatically' = 'loginWithCreateEventButton'
 ) => {
   beforeEach(() => {

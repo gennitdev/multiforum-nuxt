@@ -5,6 +5,10 @@ describe('Comment moderation link verification', () => {
   // Set up test data once for all tests in this file
   setupTestData();
 
+  beforeEach(() => {
+    cy.loginProgrammatically();
+  });
+
   it('verifies navigation links between archived comment, issue, and original context', () => {
     // Test data
     const discussionTitle = 'Example topic 1';
@@ -88,6 +92,7 @@ describe('Comment moderation link verification', () => {
 
         // Step 7: Return to issue for cleanup
         cy.visit(issueUrl);
+        cy.authenticateOnCurrentPage();
         cy.wait('@graphqlRequest');
 
         // Step 8: Unarchive from issue
@@ -187,6 +192,7 @@ describe('Comment moderation link verification', () => {
 
     // Navigate to issues page
     cy.visit(`${CATS_FORUM.replace('discussions', 'issues')}`);
+    cy.authenticateOnCurrentPage();
     cy.wait('@graphqlRequest');
 
     // Find and click on the issue for our feedback
@@ -213,6 +219,7 @@ describe('Comment moderation link verification', () => {
 
       // Clean up: Go back to issue and archive the feedback
       cy.visit(issueUrl);
+      cy.authenticateOnCurrentPage();
       cy.wait('@graphqlRequest');
 
       cy.contains('Archive').click();

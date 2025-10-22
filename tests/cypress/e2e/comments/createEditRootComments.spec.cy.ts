@@ -5,6 +5,10 @@ describe('Basic root comment operations', () => {
   // Set up test data once for all tests in this file
   setupTestData();
 
+  beforeEach(() => {
+    cy.loginProgrammatically();
+  });
+
   it('creates, edits and deletes a comment', () => {
     const TEST_COMMENT_TEXT = 'Test comment';
 

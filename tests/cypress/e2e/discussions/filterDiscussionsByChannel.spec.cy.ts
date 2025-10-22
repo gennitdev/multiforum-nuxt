@@ -5,7 +5,7 @@ describe('Filter discussions by channel', () => {
   // Set up test data once for all tests in this file
   setupTestData();
   // Login before each test
-  loginUser('loginWithCreateEventButton');
+  loginUser('loginProgrammatically');
 
   it('filters discussions by channel', () => {
     const searchTerm = 'Example topic 1';
@@ -14,6 +14,7 @@ describe('Filter discussions by channel', () => {
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
     cy.visit(DISCUSSION_LIST);
+    cy.syncAuthState();
     // Wait for initial data load instead of arbitrary timeout
     cy.wait('@graphqlRequest').its('response.statusCode').should('eq', 200);
 

@@ -13,6 +13,8 @@ describe('Comment voting operations', () => {
   it('User 1 can undo upvote on their own comment', () => {
     const TEST_COMMENT_TEXT = 'Test comment';
 
+    cy.loginProgrammatically();
+
     // Set up GraphQL request interception
     cy.intercept('POST', '**/graphql').as('graphqlRequest');
 
