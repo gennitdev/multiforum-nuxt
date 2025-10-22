@@ -31,6 +31,16 @@ export const setupTestData = () => {
   after(() => {
     cy.log('🧹 Cleaning up test data');
     dataInitialized = false;
+    cy.window({ log: false }).then((win) => {
+      win.location.replace('about:blank');
+    });
+    cy.wait(50);
+    cy.clearAllAuthState();
+    cy.then(() => {
+      if (Cypress.session?.clearAllSavedSessions) {
+        Cypress.session.clearAllSavedSessions();
+      }
+    });
   });
 };
 
