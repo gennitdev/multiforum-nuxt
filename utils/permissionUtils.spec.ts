@@ -220,6 +220,42 @@ describe('permissionUtils', () => {
       ).toBe(false);
     });
 
+    it('should handle missing userRoles without throwing', () => {
+      const params = {
+        permissionData: null,
+        username: 'user1',
+        modProfileName: 'mod1',
+        isSuspendedAsUser: false,
+        isSuspendedAsMod: false,
+        modRoles: {
+          assignedModChannelRole: null,
+          defaultModRole,
+        },
+        action: 'canCreateDiscussion',
+      } as unknown as CheckPermissionParams;
+
+      expect(() => checkPermission(params)).not.toThrow();
+      expect(checkPermission(params)).toBe(false);
+    });
+
+    it('should handle missing modRoles without throwing', () => {
+      const params = {
+        permissionData: null,
+        username: 'user1',
+        modProfileName: 'mod1',
+        isSuspendedAsUser: false,
+        isSuspendedAsMod: false,
+        userRoles: {
+          assignedChannelRole: null,
+          defaultChannelRole,
+        },
+        action: 'canReport',
+      } as unknown as CheckPermissionParams;
+
+      expect(() => checkPermission(params)).not.toThrow();
+      expect(checkPermission(params)).toBe(false);
+    });
+
     it('should use assigned user role over default user role', () => {
       const permissionData = {
         Admins: [{ username: 'admin1' }],

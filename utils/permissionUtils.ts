@@ -119,6 +119,18 @@ export const checkPermission = (params: CheckPermissionParams): boolean => {
     action,
   } = params;
 
+  const safeUserRoles: CheckPermissionParams['userRoles'] =
+    userRoles ?? {
+      assignedChannelRole: null,
+      defaultChannelRole: null,
+    };
+
+  const safeModRoles: CheckPermissionParams['modRoles'] =
+    modRoles ?? {
+      assignedModChannelRole: null,
+      defaultModRole: null,
+    };
+
   // ---------- STEP 1: Determine if this is a user or mod permission ----------
   const userPermissionKeys: UserPermissionKey[] = [
     'canCreateComment',
@@ -141,7 +153,7 @@ export const checkPermission = (params: CheckPermissionParams): boolean => {
 
     // Use assigned role if exists, otherwise fall back to default
     const roleToCheck =
-      userRoles.assignedChannelRole || userRoles.defaultChannelRole;
+      safeUserRoles.assignedChannelRole || safeUserRoles.defaultChannelRole;
 
     if (roleToCheck && roleToCheck[action] !== undefined) {
       return !!roleToCheck[action];
@@ -159,7 +171,7 @@ export const checkPermission = (params: CheckPermissionParams): boolean => {
 
   // Use assigned mod role if exists, otherwise fall back to default
   const modRoleToCheck =
-    modRoles.assignedModChannelRole || modRoles.defaultModRole;
+    safeModRoles.assignedModChannelRole || safeModRoles.defaultModRole;
 
   if (modRoleToCheck && modRoleToCheck[action] !== undefined) {
     return !!modRoleToCheck[action];

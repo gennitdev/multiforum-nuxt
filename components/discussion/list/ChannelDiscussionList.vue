@@ -124,15 +124,6 @@ const loadMore = () => {
 
 const showModProfileModal = ref(false);
 
-onMounted(() => {
-  if (
-    discussionChannelResult.value?.getDiscussionsInChannel.discussionChannels
-      .length === 0
-  ) {
-    refetchDiscussions();
-  }
-});
-
 watch(
   () => route.query,
   () => {

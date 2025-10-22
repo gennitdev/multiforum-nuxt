@@ -9,10 +9,10 @@ import { useRouter, useRoute } from 'nuxt/app';
 import FontSizeControl from '@/components/channel/FontSizeControl.vue';
 import BecomeAdminModal from '@/components/channel/BecomeAdminModal.vue';
 import AddToChannelFavorites from '@/components/favorites/AddToChannelFavorites.vue';
-import { isAuthenticatedVar, usernameVar, modProfileNameVar } from '@/cache';
-import { checkPermission } from '@/utils/permissionUtils';
+import { isAuthenticatedVar, usernameVar } from '@/cache';
 import ChannelTagEditor from '@/components/channel/ChannelTagEditor.vue';
 import Tag from '@/components/TagComponent.vue';
+import { useChannelPermissions } from '@/composables/useChannelPermissions';
 
 const props = defineProps({
   channel: {
@@ -78,6 +78,8 @@ const hideTagEditor = () => {
   showTagEditor.value = false;
 };
 
+const { userPermissions } = useChannelPermissions({ channelId });
+
 // Check if user has permission to update channel
 const canUpdateChannel = computed(() => {
   if (!isAuthenticatedVar.value || !props.channel) {
@@ -85,7 +87,6 @@ const canUpdateChannel = computed(() => {
   }
 
   const username = usernameVar.value;
-  const modProfileName = modProfileNameVar.value;
 
   // Check if user is channel admin (bypass permission check)
   const isChannelAdmin = props.channel.Admins?.some(
@@ -97,14 +98,7 @@ const canUpdateChannel = computed(() => {
   }
 
   // Check canUpdateChannel permission from role
-  return checkPermission({
-    permissionData: props.channel,
-    standardModRole: props.channel.DefaultChannelRole,
-    elevatedModRole: null, // User permissions don't use elevated mod role
-    username,
-    modProfileName,
-    action: 'canUpdateChannel',
-  });
+  return !!userPermissions.value?.canUpdateChannel;
 });
 </script>
 
