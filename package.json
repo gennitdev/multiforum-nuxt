@@ -66,7 +66,7 @@
     "md-editor-v3": "^6.1.0",
     "nuxt": "^4.0.0",
     "pinia": "^3.0.2",
-    "three": "^0.172.0",
+    "three": "^0.182.0",
     "tslib": "^2.8.1",
     "v-code-diff": "^1.13.1",
     "vite-plugin-vuetify": "^2.1.2",
